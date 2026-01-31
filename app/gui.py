@@ -6,9 +6,19 @@ from app.settings import SettingsManager
 import datetime
 import os
 
+class LogStream:
+    def __init__(self, signal):
+        self.signal = signal
+    def write(self, text):
+        if text.strip():
+            self.signal.emit(text.strip())
+    def flush(self):
+        pass
+
 class MainWindow(QMainWindow):
-    # Signal to bridge background thread -> UI thread
+    # Signals to bridge background thread -> UI thread
     context_signal = pyqtSignal(dict)
+    log_signal = pyqtSignal(str)
 
     def __init__(self, watcher, port=5555):
         super().__init__()
@@ -171,21 +181,11 @@ class MainWindow(QMainWindow):
         self.log_area.setReadOnly(True)
         layout.addWidget(self.log_area)
 
-        # Signal for thread-safe logging
-        self.log_signal = pyqtSignal(str)
+        # Connect log signal to log area
         self.log_signal.connect(self.log_area.append)
 
         # Redirect stdout/stderr to GUI
         import sys
-        class LogStream:
-            def __init__(self, signal):
-                self.signal = signal
-            def write(self, text):
-                if text.strip():
-                    self.signal.emit(text.strip())
-            def flush(self):
-                pass
-
         sys.stdout = LogStream(self.log_signal)
         sys.stderr = LogStream(self.log_signal)
 
