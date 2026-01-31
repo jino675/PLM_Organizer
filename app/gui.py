@@ -186,7 +186,17 @@ class MainWindow(QMainWindow):
         plm_id = data.get('plm_id', '')
         title = data.get('title', '')
         
-        # Calculate Preview Name
+        # 1. Handle Empty Context (Non-PLM page or no data)
+        if not defect and not plm_id and not title:
+            # Revert to Ready state
+            self.current_folder_name = None
+            display_text = "📂 Ready (Waiting for Data...)"
+            self.status_label.setText(display_text)
+            self.status_label.setStyleSheet("background-color: #37474F; color: #90A4AE; padding: 15px; border-radius: 8px; border: 1px solid #455A64; font-size: 14px; font-weight: bold;")
+            self.overlay.update_text(display_text)
+            return
+
+        # 2. Calculate Preview Name
         id_part = ""
         if defect:
             id_part = defect

@@ -31,13 +31,13 @@ class Organizer:
         plm_id = context.get('plm_id')
         title = context.get('title')
 
+        # Strictly check for valid context
+        if not defect_id and not plm_id:
+            print(f"Skipping {file_path}: No valid ID context (Defect or PLM ID missing).")
+            return
+
         # Determine Folder Name
-        # Logic: [DefectID / PLMID]_Title
-        
         id_part = defect_id if defect_id else plm_id
-        if not id_part:
-            # Fallback if neither exists
-            id_part = "Unknown_ID"
             
         # Clean title: Remove leading brackets, spaces, etc if needed.
         # User requirement: [DefectID]_Title

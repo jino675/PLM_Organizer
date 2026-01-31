@@ -32,18 +32,32 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 function requestMetadataFromTab(tabId) {
     if (!tabId) return;
 
-    // Send a message to the content script asking for data
-    chrome.tabs.sendMessage(tabId, { action: "get_metadata" }, (response) => {
-        if (chrome.runtime.lastError) {
-            // Content script might not be injected yet or not a PLM page
-            console.log("Could not contact tab:", chrome.runtime.lastError.message);
+    chrome.tabs.get(tabId, (tab) => {
+        if (chrome.runtime.lastError || !tab) return;
+
+        // Check if allowed domain
+        const isAllowed = tab.url && (tab.url.includes("splm.sec.samsung.net") || tab.url.startsWith("file:///"));
+
+        if (!isAllowed) {
+            console.log("Non-PLM page focused. Clearing context.");
+            sendToLocalApp({ defect_id: "", plm_id: "", title: "", url: tab.url });
             return;
         }
 
-        if (response) {
-            console.log("Got metadata:", response);
-            sendToLocalApp(response);
-        }
+        // It's an allowed domain, ask the content script for metadata
+        chrome.tabs.sendMessage(tabId, { action: "get_metadata" }, (response) => {
+            if (chrome.runtime.lastError) {
+                // Should not happen if manifest is correct, but safety first
+                console.log("Allowed page but no content script. Clearing context.");
+                sendToLocalApp({ defect_id: "", plm_id: "", title: "", url: tab.url });
+                return;
+            }
+
+            if (response) {
+                console.log("Got metadata:", response);
+                sendToLocalApp(response);
+            }
+        });
     });
 }
 

@@ -17,7 +17,8 @@
     "content_scripts": [
         {
             "matches": [
-                "<all_urls>"
+                "https://splm.sec.samsung.net/*",
+                "file:///*"
             ],
             "js": [
                 "content.js"
