@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QLabel, 
                              QTextEdit, QPushButton, QHBoxLayout, QStatusBar, QFileDialog, QGroupBox, QCheckBox)
 from PyQt6.QtCore import Qt, pyqtSlot, QTimer, pyqtSignal
+from PyQt6.QtGui import QIcon, QPainter, QColor, QFont, QBrush, QPen, QFontMetrics
 from app.context import ContextManager
 from app.settings import SettingsManager
 import datetime
@@ -72,8 +73,13 @@ class MainWindow(QMainWindow):
             self.log_area.append(f"[{timestamp}] {msg}")
 
     def init_ui(self):
-        self.setWindowTitle("PLM Organizer") # Removed port from title
+        self.setWindowTitle("PLM Organizer") 
         self.setGeometry(100, 100, 600, 500)
+        
+        # Set App Icon
+        icon_path = os.path.join(os.path.dirname(__file__), "assets", "icon.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
         
         # Apply Dark Theme
         self.setStyleSheet("""
@@ -140,59 +146,92 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget) # Corrected layout initialization
         
-        # 1. Header (Centered)
+        # 1. Header (Centered Title, Right Credits)
         header_widget = QWidget()
-        header_layout = QVBoxLayout(header_widget)
-        header_layout.setContentsMargins(0, 10, 0, 10)
+        header_layout = QHBoxLayout(header_widget)
+        header_layout.setContentsMargins(10, 10, 10, 5)
+        
+        # Spacer for centering title
+        header_layout.addStretch(1)
         
         self.title_label = QLabel("PLM Organizer")
-        self.title_label.setStyleSheet("font-size: 22px; font-weight: bold; color: #ffffff;")
+        self.title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #ffffff; letter-spacing: 1px;")
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header_layout.addWidget(self.title_label)
+        
+        # Another spacer to push credits to the right, but we'll use a nested layout for credits
+        header_layout.addStretch(1)
         
         self.credits_label = QLabel("Created by jino.ryu")
-        self.credits_label.setStyleSheet("color: #777; font-style: italic; font-size: 12px;")
-        self.credits_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        header_layout.addWidget(self.title_label)
+        self.credits_label.setStyleSheet("color: #555; font-style: italic; font-size: 11px;")
+        self.credits_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
         header_layout.addWidget(self.credits_label)
-        main_layout.addWidget(header_widget) # Used main_layout
+        
+        main_layout.addWidget(header_widget)
 
         # 2. Settings Section
-        settings_group = QGroupBox("Settings")
+        settings_group = QGroupBox() # Title removed to use custom header
+        settings_group.setStyleSheet("QGroupBox { border: 1px solid #444; border-radius: 8px; margin-top: 15px; padding-top: 15px; }")
         settings_layout = QVBoxLayout()
+        
+        # Custom Settings Header
+        settings_header = QLabel("─── Settings ───")
+        settings_header.setStyleSheet("color: #81C784; font-weight: bold; font-size: 13px; margin: -25px 0 10px 0; background-color: #2b2b2b;")
+        settings_header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        settings_layout.addWidget(settings_header)
         
         # Port Info
         port_label = QLabel(f"📡 Server Port: {self.port}")
-        port_label.setStyleSheet("color: #90A4AE; font-weight: bold; margin-bottom: 5px;")
+        port_label.setStyleSheet("color: #90A4AE; font-weight: bold; margin-bottom: 10px;")
         settings_layout.addWidget(port_label)
         
         # Checkboxes Layout
         cb_layout = QHBoxLayout()
         self.overlay_cb = QCheckBox("Show Overlay")
-        self.overlay_cb.setChecked(self.settings_manager.get("show_overlay"))
+        self.overlay_cb.setChecked(self.settings_manager.get("show_overlay") if self.settings_manager.get("show_overlay") is not None else True)
         self.overlay_cb.toggled.connect(self.toggle_overlay)
         
         self.always_top_cb = QCheckBox("Always on Top")
-        self.always_top_cb.setChecked(self.settings_manager.get("always_on_top"))
+        self.always_top_cb.setChecked(self.settings_manager.get("always_on_top") if self.settings_manager.get("always_on_top") is not None else False)
         self.always_top_cb.toggled.connect(self.toggle_always_on_top)
         
         cb_layout.addWidget(self.overlay_cb)
         cb_layout.addWidget(self.always_top_cb)
         settings_layout.addLayout(cb_layout)
         
-        # Target Folder Selection
-        folder_layout = QHBoxLayout()
-        self.folder_label = QLabel(f"Target: {self.settings_manager.get('target_folder')}")
-        self.folder_label.setStyleSheet("font-weight: bold; color: #4CAF50;") 
-        self.change_folder_btn = QPushButton("Change Folder")
+        # Target Folder Styled Field
+        folder_container = QWidget()
+        folder_container_layout = QVBoxLayout(folder_container)
+        folder_container_layout.setContentsMargins(0, 10, 0, 0)
+        
+        folder_label_title = QLabel("Watch Folder:")
+        folder_label_title.setStyleSheet("color: #aaa; font-size: 12px;")
+        folder_container_layout.addWidget(folder_label_title)
+
+        folder_field_layout = QHBoxLayout()
+        self.folder_display = QLabel(self.settings_manager.get('target_folder'))
+        self.folder_display.setStyleSheet("""
+            background-color: #1a1a1a; 
+            color: #4CAF50; 
+            padding: 8px; 
+            border-radius: 4px; 
+            border: 1px solid #333;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+        """)
+        self.folder_display.setWordWrap(True)
+        
+        self.change_folder_btn = QPushButton("Change")
+        self.change_folder_btn.setFixedWidth(80)
         self.change_folder_btn.clicked.connect(self.change_folder)
         
-        folder_layout.addWidget(self.folder_label, 1)
-        folder_layout.addWidget(self.change_folder_btn)
-        settings_layout.addLayout(folder_layout)
+        folder_field_layout.addWidget(self.folder_display, 1)
+        folder_field_layout.addWidget(self.change_folder_btn)
+        folder_container_layout.addLayout(folder_field_layout)
         
+        settings_layout.addWidget(folder_container)
         settings_group.setLayout(settings_layout)
-        main_layout.addWidget(settings_group) # Used main_layout
+        main_layout.addWidget(settings_group)
         
         # 3. Control Button (Outside and Below Settings)
         self.toggle_btn = QPushButton("Stop Monitoring")
@@ -325,11 +364,14 @@ class MainWindow(QMainWindow):
 
     def toggle_always_on_top(self, checked):
         self.settings_manager.set("always_on_top", checked)
+        # Avoid full redraw flicker if possible by preserving geometry
+        geom = self.geometry()
         if checked:
             self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
         else:
             self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowStaysOnTopHint)
-        self.show() # Required to apply flags
+        self.setGeometry(geom)
+        self.show()
 
     def change_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Target Folder")
@@ -337,7 +379,9 @@ class MainWindow(QMainWindow):
             self.settings_manager.set("target_folder", folder)
             self.settings_manager.set("watch_folder", folder) 
             
-            self.folder_label.setText(f"Target Folder: {folder}")
+            if hasattr(self, 'folder_display'):
+                self.folder_display.setText(folder)
+                
             self.log_message(f"Target folder changed to: {folder}")
             
             if self.monitoring_active:
@@ -350,6 +394,23 @@ class MainWindow(QMainWindow):
     def log_message_signal(self, message):
         """Wrapper for overlay to use the signal."""
         self.log_signal.emit(message)
+
+class SnapGuide(QWidget):
+    """Tiny circular dot widget to show snap locations during drag."""
+    def __init__(self, color="#81C784"):
+        super().__init__()
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self.setFixedSize(16, 16)
+        self.color = color
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setBrush(QColor(self.color))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(3, 3, 10, 10)
 
 class ContextOverlay(QWidget):
     def __init__(self, logger=None):
@@ -369,14 +430,23 @@ class ContextOverlay(QWidget):
         self.FIXED_HEIGHT = 32 
         self.setFixedSize(self.FIXED_WIDTH, self.FIXED_HEIGHT)
         
+        # Set Icon for Overlay Taskbar entry
+        icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app", "assets", "icon.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+            
         self.display_text = "Waiting..."
         self._dragging = False
         self._drag_pos = None
+        
+        # Snap Guides (Pre-create 4 dots)
+        self.guides = [SnapGuide() for _ in range(4)]
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self._dragging = True
             self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            self.show_guides()
             event.accept()
 
     def mouseMoveEvent(self, event):
@@ -387,8 +457,27 @@ class ContextOverlay(QWidget):
     def mouseReleaseEvent(self, event):
         if self._dragging:
             self._dragging = False
+            self.hide_guides()
             self.snap_to_corner()
             event.accept()
+
+    def show_guides(self):
+        """Shows 4 dots at screen corners."""
+        screen = self.screen().availableGeometry()
+        margin = 38 # Center of 16x16 dot at 30px margin offset
+        points = [
+            (screen.left() + margin - 8, screen.top() + margin - 8),
+            (screen.right() - margin - 8, screen.top() + margin - 8),
+            (screen.left() + margin - 8, screen.bottom() - margin - 8),
+            (screen.right() - margin - 8, screen.bottom() - margin - 8)
+        ]
+        for i, (x, y) in enumerate(points):
+            self.guides[i].move(x, y)
+            self.guides[i].show()
+
+    def hide_guides(self):
+        for g in self.guides:
+            g.hide()
 
     def snap_to_corner(self):
         """Finds the nearest corner of the current monitor and snaps to it."""
@@ -441,7 +530,6 @@ class ContextOverlay(QWidget):
         super().showEvent(event)
         
     def paintEvent(self, event):
-        from PyQt6.QtGui import QPainter, QColor, QFont, QBrush, QPen, QFontMetrics
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
