@@ -25,37 +25,43 @@ class MainWindow(QMainWindow):
         self.watcher = watcher
         self.port = port
         self.settings_manager = SettingsManager()
-        self.overlay = ContextOverlay(self.log_message)
+        self.context_manager = ContextManager()
         
-        # Initial Always on Top state
-        if self.settings_manager.get("always_on_top"):
-            self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
-        
-        # Connect signal to slot (UI Thread)
+        # Connect signals
         self.context_signal.connect(self.update_status_display)
+        self.log_signal.connect(self._log_to_area) # Safe wrapper
         
-        # Add thread-safe observer
-        # The context_manager is no longer directly managed by MainWindow,
-        # assuming it's handled externally or through the watcher.
-        # self.context_manager.add_observer(self.on_context_received) # Removed as per diff
+        # Add observer to singleton ContextManager
+        self.context_manager.add_observer(self.on_context_received)
+        
+        # Initialize Overlay (Don't show yet)
+        self.overlay = ContextOverlay(self.log_message_signal)
         
         self.init_ui()
         
-        # Connect Organizer Callback
         if hasattr(self.watcher, 'event_handler'):
             self.watcher.event_handler.organizer.set_callback(self.on_file_processed)
             
-        # Initialize Overlay with Logger
-        # Overlay initialization moved up and simplified
+        # Defer showing the overlay to ensure everything is initialized
+        QTimer.singleShot(500, self.delayed_setup)
+
+    def delayed_setup(self):
+        # Apply Always on Top if needed
+        if self.settings_manager.get("always_on_top"):
+            self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+            self.show()
+            
         if self.settings_manager.get("show_overlay"):
             self.overlay.show()
-        else:
-            self.overlay.hide()
-            
+            self.overlay.reposition()
+
     def on_context_received(self, data):
-        # This runs on the Flask Thread.
-        # Emit signal to transfer control to UI Thread.
         self.context_signal.emit(data)
+
+    def _log_to_area(self, msg):
+        if hasattr(self, 'log_area'):
+            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+            self.log_area.append(f"[{timestamp}] {msg}")
 
     def init_ui(self):
         self.setWindowTitle("PLM Organizer") # Removed port from title
@@ -202,11 +208,11 @@ class MainWindow(QMainWindow):
         self.log_area.setReadOnly(True)
         main_layout.addWidget(self.log_area) # Used main_layout
 
-        # Connect log signal to log area
-        self.log_signal.connect(self.log_area.append)
-
-        # Redirect stdout/stderr to GUI
+        # Connect log signal
+        # Redirect stdout/stderr - using a safer way to avoid recursion if printing fails
         import sys
+        self._stdout_old = sys.stdout
+        self._stderr_old = sys.stderr
         sys.stdout = LogStream(self.log_signal)
         sys.stderr = LogStream(self.log_signal)
 
@@ -330,8 +336,12 @@ class MainWindow(QMainWindow):
                 self.watcher.update_path(folder)
 
     def log_message(self, message):
-        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-        self.log_area.append(f"[{timestamp}] {message}") 
+        """Thread-safe logging by emitting a signal."""
+        self.log_signal.emit(message)
+
+    def log_message_signal(self, message):
+        """Wrapper for overlay to use the signal."""
+        self.log_signal.emit(message)
 
 class ContextOverlay(QWidget):
     def __init__(self, logger=None):
