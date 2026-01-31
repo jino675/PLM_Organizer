@@ -28,18 +28,19 @@ class DownloadHandler(FileSystemEventHandler):
         if filename.startswith("_plm_context") and filename.endswith(".json"):
             print(f"Ninja Mode: Received context file {filename}")
             try:
-                # Small delay to ensure file is written
-                time.sleep(0.5)
+                # Increased delay to ensures Chrome has finished writing/unlocking
+                time.sleep(1.0) 
                 with open(file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     from app.context import ContextManager
                     ContextManager().update_context(data)
                 
                 # Instantly delete to keep the folder clean
-                os.remove(file_path)
-                print("Ninja Mode: Context updated and bridge file deleted.")
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                print(f"Ninja Mode: Success. Data from {data.get('url', 'Unknown URL')}")
             except Exception as e:
-                print(f"Ninja Mode Error: {e}")
+                print(f"Ninja Mode Error (File may be locked or malformed): {e}")
             return
 
         # 2. Ignore other temporary download files

@@ -187,6 +187,7 @@ class MainWindow(QMainWindow):
         title = data.get('title', '')
         
         # 1. Handle Empty Context (Non-PLM page or no data)
+        url = data.get('url', 'Unknown Source')
         if not defect and not plm_id and not title:
             # Revert to Ready state
             self.current_folder_name = None
@@ -194,7 +195,10 @@ class MainWindow(QMainWindow):
             self.status_label.setText(display_text)
             self.status_label.setStyleSheet("background-color: #37474F; color: #90A4AE; padding: 15px; border-radius: 8px; border: 1px solid #455A64; font-size: 14px; font-weight: bold;")
             self.overlay.update_text(display_text)
+            self.log_message(f"Context Cleared: Focused on non-PLM page ({url})")
             return
+
+        self.log_message(f"Context Received: {defect if defect else plm_id} | {title} ({url})")
 
         # 2. Calculate Preview Name
         id_part = ""
