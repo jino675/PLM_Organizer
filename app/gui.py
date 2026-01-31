@@ -58,10 +58,10 @@ class MainWindow(QMainWindow):
         # Defer showing the overlay to ensure everything is initialized
         QTimer.singleShot(500, self.delayed_setup)
         
-        # Status Bar Timer (Health Check)
+        # Status Bar Timer (Health Check & Animation)
         self.health_timer = QTimer()
         self.health_timer.timeout.connect(self.update_health_status)
-        self.health_timer.start(5000) # Every 5 seconds
+        self.health_timer.start(1000) # Every 1 second for smoother animation
 
     def delayed_setup(self):
         # Apply Always on Top if needed
@@ -168,10 +168,12 @@ class MainWindow(QMainWindow):
         self.logo_label = QLabel()
         if os.path.exists(icon_path):
             from PyQt6.QtGui import QPixmap
-            pixmap = QPixmap(icon_path).scaled(48, 48, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            pixmap = QPixmap(icon_path).scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.logo_label.setPixmap(pixmap)
-        self.logo_label.setFixedWidth(64)
-        self.logo_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+            self.logo_label.setScaledContents(True)
+        self.logo_label.setFixedSize(64, 64)
+        self.logo_label.setStyleSheet("background: transparent; border: none;")
+        self.logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_row_layout.addWidget(self.logo_label)
         
         title_row_layout.addStretch(1)
@@ -184,7 +186,7 @@ class MainWindow(QMainWindow):
         title_row_layout.addStretch(1)
         
         # Right: Version
-        self.version_label = QLabel("v1.5.0")
+        self.version_label = QLabel("v1.5.2")
         self.version_label.setFixedWidth(60)
         self.version_label.setStyleSheet("color: #888; font-size: 11px; margin-top: 10px;")
         self.version_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
@@ -220,11 +222,6 @@ class MainWindow(QMainWindow):
             }
         """)
         settings_layout = QVBoxLayout()
-        
-        # Port Info
-        port_label = QLabel(f"📡 Server Port: {self.port}")
-        port_label.setStyleSheet("color: #90A4AE; font-weight: bold; margin-bottom: 10px;")
-        settings_layout.addWidget(port_label)
         
         # Checkboxes Layout
         cb_layout = QHBoxLayout()
@@ -413,10 +410,16 @@ class MainWindow(QMainWindow):
 
     def update_health_status(self):
         """Update the status bar with extension connection health and animation."""
+        if not hasattr(self, 'port_permanent_label'):
+            # Add Port Info to permanent area (Right side)
+            self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+            self.port_permanent_label.setStyleSheet("color: #90A4AE; font-weight: bold; font-family: 'Segoe UI'; font-size: 13px;")
+            self.statusBar().addPermanentWidget(self.port_permanent_label)
+
         last_time = self.context_manager.last_heartbeat
         if last_time == 0:
             status = "Chrome Extension: Not Loaded"
-            color = "#888;"
+            color = "#FFA726;" # Vibrant Orange
         else:
             diff = time.time() - last_time
             if diff < 15:
@@ -424,13 +427,13 @@ class MainWindow(QMainWindow):
                 self.dot_count = (self.dot_count + 1) % 4
                 dots = "." * self.dot_count
                 status = f"Chrome Extension: Running{dots}"
-                color = "#4CAF50; font-weight: bold;"
+                color = "#4CAF50; font-weight: bold;" # Green
             else:
                 status = "Chrome Extension: Not Working"
-                color = "#F44336; font-weight: bold;"
+                color = "#F44336; font-weight: bold;" # Red
         
         self.statusBar().showMessage(status)
-        self.statusBar().setStyleSheet(f"color: {color}; font-family: 'Segoe UI'; font-size: 13px; padding-left: 5px;")
+        self.statusBar().setStyleSheet(f"QStatusBar {{ background-color: #1e1e1e; color: {color}; font-family: 'Segoe UI'; font-size: 13px; padding-left: 5px; }}")
 
     def change_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Target Folder")
