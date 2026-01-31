@@ -36,11 +36,12 @@ function requestMetadataFromTab(tabId) {
         if (chrome.runtime.lastError || !tab) return;
 
         // Check if allowed domain
-        const isAllowed = tab.url && (tab.url.includes("splm.sec.samsung.net") || tab.url.startsWith("file:///"));
+        const url = tab.url || "";
+        const isAllowed = url.includes("splm.sec.samsung.net") || url.startsWith("file:///");
 
         if (!isAllowed) {
-            console.log("Non-PLM page focused. Clearing context.");
-            sendToLocalApp({ defect_id: "", plm_id: "", title: "", url: tab.url });
+            console.log("Non-PLM page focused:", url, "Clearing context.");
+            sendToLocalApp({ defect_id: "", plm_id: "", title: "", url: url });
             return;
         }
 
