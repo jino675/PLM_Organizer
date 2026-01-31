@@ -3,6 +3,7 @@ import shutil
 import time
 from app.context import ContextManager
 import re
+import zipfile
 
 class Organizer:
     def __init__(self):
@@ -70,22 +71,57 @@ class Organizer:
 
         # Retry logic for file locking issues (common in Windows)
         max_retries = 5
+        moved_file = None
         for attempt in range(max_retries):
             try:
                 shutil.move(file_path, destination)
                 print(f"Moved {file_path} -> {destination}")
-                if self.on_success_callback:
-                    self.on_success_callback(destination)
-                return destination
+                moved_file = destination
+                break
             except PermissionError:
                 if attempt < max_retries - 1:
                     print(f"File locked, retrying in 1s... ({file_path})")
                     time.sleep(1)
                 else:
                     print(f"Failed to move file after {max_retries} attempts: {file_path}")
+                    return None
             except Exception as e:
                 print(f"Error moving file: {e}")
-                break
+                return None
+
+        if moved_file:
+            # Check for Auto-Unzip
+            if moved_file.lower().endswith('.zip'):
+                print(f"ZIP detected! Starting extraction: {moved_file}")
+                self.unzip_file(moved_file)
+
+            if self.on_success_callback:
+                self.on_success_callback(moved_file)
+            
+            return moved_file
+
+    def unzip_file(self, zip_path):
+        """
+        Extracts zip file to a subfolder of the same name.
+        """
+        try:
+            target_dir = os.path.dirname(zip_path)
+            # Create extraction folder (e.g., source.zip -> source/)
+            zip_name = os.path.basename(zip_path)
+            folder_name = os.path.splitext(zip_name)[0]
+            extract_to = os.path.join(target_dir, folder_name)
+
+            if not os.path.exists(extract_to):
+                os.makedirs(extract_to)
+
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_to)
+                print(f"Extracted {zip_name} to {extract_to}")
+            
+            return True
+        except Exception as e:
+            print(f"Error unzipping {zip_path}: {e}")
+            return False
 
     def parse_title(self, raw_title):
         """
