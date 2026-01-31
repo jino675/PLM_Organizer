@@ -2,4 +2,5 @@ PyQt6
 watchdog
 flask
 requests
+pywin32
 pyinstaller

@@ -50,7 +50,12 @@ def main():
     watcher = FileWatcher()
     watcher.start()
     
-    # 4. GUI
+    # 4. Ghost Title Bridge (Invisible Sync)
+    from app.bridge import TitleBridge
+    bridge = TitleBridge()
+    bridge.start()
+    
+    # 5. GUI
     window = MainWindow(watcher, server_port)
     window.show()
     

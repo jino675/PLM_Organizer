@@ -67,14 +67,10 @@ let currentPort = 5555;
 const START_PORT = 5555;
 const END_PORT = 5564;
 
-// Track last sent data to avoid redundant Ninja Mode downloads
-let lastSentData = null;
-
 async function sendToLocalApp(data) {
     // 1. Try Primary (Network)
     let success = await trySend(currentPort, data);
     if (success) {
-        lastSentData = JSON.stringify(data);
         return;
     }
 
@@ -85,43 +81,11 @@ async function sendToLocalApp(data) {
     if (foundPort) {
         currentPort = foundPort;
         console.log(`Discovered active server on port ${currentPort}`);
-        success = await trySend(currentPort, data);
-        if (success) {
-            lastSentData = JSON.stringify(data);
-            return;
-        }
+        await trySend(currentPort, data);
+    } else {
+        // Ghost Title Bridge (in content.js) will handle the sync silently
+        console.warn("Network blocked. Relying on Ghost Title Bridge.");
     }
-
-    // 3. Last Resort: Ninja Mode (File-based Bridge)
-    // Only download if data has changed to avoid spamming downloads
-    const dataStr = JSON.stringify(data);
-    if (dataStr !== lastSentData) {
-        console.warn("Network 100% blocked. Using Ninja Mode (File Bridge)...");
-        saveToFileBridge(data);
-        lastSentData = dataStr;
-    }
-}
-
-function saveToFileBridge(data) {
-    const json = JSON.stringify(data);
-    const blob = new Blob([json], { type: "application/json" });
-    const reader = new FileReader();
-
-    reader.onload = function () {
-        chrome.downloads.download({
-            url: reader.result,
-            filename: "_plm_context.json",
-            conflictAction: "overwrite",
-            saveAs: false
-        }, (downloadId) => {
-            if (chrome.runtime.lastError) {
-                console.error("Ninja Mode Failed:", chrome.runtime.lastError.message);
-            } else {
-                console.log("Ninja Mode: Metadata file sent to Downloads folder.", downloadId);
-            }
-        });
-    };
-    reader.readAsDataURL(blob);
 }
 
 async function trySend(port, data) {
