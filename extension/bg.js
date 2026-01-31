@@ -35,9 +35,9 @@ function requestMetadataFromTab(tabId) {
     chrome.tabs.get(tabId, (tab) => {
         if (chrome.runtime.lastError || !tab) return;
 
-        // Check if allowed domain
+        // Check if allowed domain (broadened for Samsung intranet)
         const url = tab.url || "";
-        const isAllowed = url.includes("splm.sec.samsung.net") || url.startsWith("file:///");
+        const isAllowed = url.includes("samsung.net") || url.includes("sec.samsung.net") || url.startsWith("file:///");
 
         if (!isAllowed) {
             console.log("Non-PLM page focused:", url, "Clearing context.");
