@@ -32,19 +32,29 @@ class ContextManager:
             clean_title = raw_title.strip() if raw_title else ""
             
             if clean_title:
-                # Step A: Strip all leading brackets and junk
+                # Step A: Exhaustively strip all leading metadata blocks like [...], (...), {...}
+                # and their contents, along with any leading whitespace.
                 while True:
                     found = False
-                    # Pattern: starts with [ or ( or { followed by matching end
-                    if clean_title.startswith('[') and ']' in clean_title:
-                        clean_title = clean_title[clean_title.find(']')+1:].strip()
-                        found = True
-                    elif clean_title.startswith('(') and ')' in clean_title:
-                        clean_title = clean_title[clean_title.find(')')+1:].strip()
-                        found = True
-                    elif clean_title.startswith('{') and '}' in clean_title:
-                        clean_title = clean_title[clean_title.find('}')+1:].strip()
-                        found = True
+                    clean_title = clean_title.strip()
+                    if not clean_title: break
+                    
+                    if clean_title.startswith('['):
+                        end_idx = clean_title.find(']')
+                        if end_idx != -1:
+                            clean_title = clean_title[end_idx+1:].strip()
+                            found = True
+                    elif clean_title.startswith('('):
+                        end_idx = clean_title.find(')')
+                        if end_idx != -1:
+                            clean_title = clean_title[end_idx+1:].strip()
+                            found = True
+                    elif clean_title.startswith('{'):
+                        end_idx = clean_title.find('}')
+                        if end_idx != -1:
+                            clean_title = clean_title[end_idx+1:].strip()
+                            found = True
+                    
                     if not found: break
                 
                 # Step B: Halt at double space
