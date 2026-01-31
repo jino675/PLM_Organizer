@@ -367,8 +367,8 @@ class MainWindow(QMainWindow):
         
         # Update Display (Unified Format)
         display_text = f"📂 Target: {folder_name}"
-        if len(display_text) > 150:
-            display_text = display_text[:147] + "..."
+        if len(display_text) > 80:
+            display_text = display_text[:77] + "..."
             
         self.status_label.setText(display_text)
         self.status_label.setStyleSheet("background-color: #0D47A1; color: white; padding: 15px; border-radius: 8px; border: 1px solid #42A5F5; font-size: 14px; font-weight: bold;")

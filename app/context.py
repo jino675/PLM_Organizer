@@ -23,7 +23,6 @@ class ContextManager:
         with self._lock:
             self.current_data = data
             self.last_heartbeat = time.time()
-            print(f"Context Updated: {self.current_data}")
             self.notify_observers()
 
     def get_context(self):

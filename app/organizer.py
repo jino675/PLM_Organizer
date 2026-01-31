@@ -154,4 +154,8 @@ class Organizer:
         # 4. Replace remaining spaces with underscore
         current = current.replace(" ", "_")
         
+        # 5. Limit length to 40 characters
+        if len(current) > 40:
+            current = current[:37] + "..."
+            
         return current
