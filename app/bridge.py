@@ -19,7 +19,7 @@ class TitleBridge(threading.Thread):
         self.last_sync_tag = ""
 
     def run(self):
-        print("Ghost Title Bridge started...")
+        # Silence premature print to prevent pythonw window popup
         while self.running:
             try:
                 titles = []

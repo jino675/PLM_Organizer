@@ -64,10 +64,9 @@ def main():
         sys.exit(1)
 
     if server_port != 5555:
-        # Warn user but continue
-        print(f"Port 5555 busy. Using port {server_port}.")
-        # Optional: Show a non-blocking toast or just log it. 
-        # For now, we proceed silently as requested, assuming the extension will find it.
+        # Use a silent log for startup info when running headless
+        with open("error_log.txt", "a", encoding="utf-8") as f:
+            f.write(f"[{socket.gethostname()}] Port 5555 busy. Using port {server_port}.\n")
     
     # Initialize Core Components
     # 1. Config/Settings
