@@ -9,63 +9,55 @@ function syncTitle(metadata) {
     if (!metadata.defect_id && !metadata.plm_id) return;
 
     const id = metadata.defect_id || metadata.plm_id;
-    const cleanTitle = (metadata.title || "Untitled").replace(/[\[\]]/g, ""); // Remove brackets from title
+    const cleanTitle = (metadata.title || "Untitled").replace(/[\[\]]/g, "").trim();
     const tag = `[PLM_CTX:${id}|${cleanTitle}]`;
 
     if (tag === lastMetadataTag) return;
     lastMetadataTag = tag;
 
-    // Temporarily inject tag into title
-    // Format: [PLM_CTX:ID|Title] Real Page Title
+    console.log("Ghost Syncing:", tag);
     document.title = tag + " " + originalTitle;
 
-    // Optional: Revert after 2 seconds to keep it clean, 
-    // but keep it long enough for the Python app to catch it.
     setTimeout(() => {
         document.title = originalTitle;
     }, 2000);
 }
 
-// Watch for manual title changes by the page itself
-const titleObserver = new MutationObserver((mutations) => {
+const titleObserver = new MutationObserver(() => {
     const newTitle = document.title;
     if (!newTitle.includes("[PLM_CTX:")) {
         originalTitle = newTitle;
     }
 });
-titleObserver.observe(document.querySelector('title'), { childList: true });
+const titleNode = document.querySelector('title');
+if (titleNode) titleObserver.observe(titleNode, { childList: true });
 
 function parseMetadata() {
     let defectId = "";
     let plmId = "";
     let title = "";
 
-    // 1. Parse Defect ID (near "KONA ID")
-    const labels = document.querySelectorAll('.label, span, div, th, td');
-    for (let el of labels) {
-        if (el.innerText && el.innerText.includes("KONA ID")) {
-            let next = el.nextElementSibling;
-            if (next && next.innerText) {
-                defectId = next.innerText.trim();
-                break;
-            }
-            if (el.tagName === 'TD' || el.tagName === 'TH') {
-                let nextCell = el.nextElementSibling;
-                if (nextCell) {
-                    defectId = nextCell.innerText.trim();
+    // 1. Check for specific Mock IDs first
+    const mockDefect = document.getElementById('kona-id-value');
+    if (mockDefect && mockDefect.innerText.trim()) defectId = mockDefect.innerText.trim();
+    const mockPlm = document.getElementById('plm-id-value');
+    if (mockPlm && mockPlm.innerText.trim()) plmId = mockPlm.innerText.trim();
+    const mockTitle = document.getElementById('plm-title');
+    if (mockTitle && mockTitle.innerText.trim()) title = mockTitle.innerText.trim();
+
+    // 2. Generic Search (Real PLM or fallback)
+    if (!defectId) {
+        const labels = document.querySelectorAll('.label, span, div, th, td');
+        for (let el of labels) {
+            if (el.innerText && el.innerText.includes("KONA ID")) {
+                let next = el.nextElementSibling;
+                if (next && next.innerText.trim()) {
+                    defectId = next.innerText.trim();
                     break;
                 }
             }
         }
     }
-
-    // Explicit Mock Support
-    const mockDefect = document.getElementById('kona-id-value');
-    if (mockDefect) defectId = mockDefect.innerText.trim();
-    const mockPlm = document.getElementById('plm-id-value');
-    if (mockPlm) plmId = mockPlm.innerText.trim();
-    const mockTitle = document.getElementById('plm-title');
-    if (mockTitle) title = mockTitle.innerText.trim();
 
     if (!plmId) {
         const pMatch = document.body.innerText.match(/P\d{5,6}-\d{4,5}/);
@@ -83,13 +75,25 @@ function parseMetadata() {
         url: window.location.href
     };
 
-    // Sync to Title (Ghost Bridge)
-    syncTitle(data);
+    if (data.defect_id || data.plm_id) {
+        syncTitle(data);
+    }
 
     return data;
 }
 
-// Listen for messages from background script
+// 1. Auto-Parse on Load (Wait for page scripts)
+setTimeout(parseMetadata, 1000);
+
+// 2. Auto-Parse on DOM Changes (Dynamic Pages)
+let debounceTimer;
+const bodyObserver = new MutationObserver(() => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(parseMetadata, 1000);
+});
+bodyObserver.observe(document.body, { childList: true, subtree: true });
+
+// 3. Listen for Background requests
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "get_metadata") {
         const data = parseMetadata();
