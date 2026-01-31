@@ -14,11 +14,22 @@ if exist "venv\Scripts\python.exe" (
 
 :: 2. Check if required libraries are already installed (to skip installation)
 echo Checking for required libraries...
-%PY_CMD% -c "import PyQt6, flask, watchdog" >nul 2>&1
+%PY_CMD% -c "import PyQt6, flask, watchdog, win32gui" >nul 2>&1
 if !ERRORLEVEL! EQU 0 (
     echo [OK] Dependencies already met. Launching app...
+    :: Launch with pythonw (no console) but if it crashes immediately, help user debug
     start "" !PYW_CMD! main.py
-    exit
+    
+    :: Give it a second to see if it stays alive
+    timeout /t 2 >nul
+    tasklist /fi "imagename eq pythonw.exe" | find ":" >nul
+    if !ERRORLEVEL! NEQ 0 (
+        exit
+    ) else (
+        echo [!] App may have crashed on startup. Try running main.py manually to see error.
+        pause
+        exit
+    )
 )
 
 :: 3. If libraries are missing, attempt installation
@@ -57,5 +68,10 @@ if !ERRORLEVEL! NEQ 0 (
 )
 
 echo Starting PLM Organizer...
-start "" !PYW_CMD! main.py
+%PY_CMD% main.py
+if !ERRORLEVEL! NEQ 0 (
+    echo.
+    echo [CRITICAL] Application failed to start.
+    pause
+)
 exit
