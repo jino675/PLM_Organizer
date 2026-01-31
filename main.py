@@ -1,13 +1,20 @@
 import sys
+import threading
+import socket
+import traceback
 import os
 import io
-
-# 0. EARLY STEALTH: Redirect stdout/stderr immediately to suppress popup windows
-sys.stdout = io.StringIO()
-sys.stderr = io.StringIO()
-
-import threading
 import ctypes
+
+# 0. EARLY STEALTH: Redirect stdout/stderr only if we are in pythonw (noconsole) mode
+# To be truly safe, we'll use a dummy writer that doesn't crash
+class SilentWriter:
+    def write(self, *args, **kwargs): pass
+    def flush(self): pass
+
+if sys.executable.endswith("pythonw.exe"):
+    sys.stdout = SilentWriter()
+    sys.stderr = SilentWriter()
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from PyQt6.QtGui import QIcon
 from app.gui import MainWindow
