@@ -35,21 +35,26 @@ function requestMetadataFromTab(tabId) {
     chrome.tabs.get(tabId, (tab) => {
         if (chrome.runtime.lastError || !tab) return;
 
-        // Check if allowed domain (broadened for Samsung intranet)
+        // Check if allowed domain
         const url = tab.url || "";
-        const isAllowed = url.includes("samsung.net") || url.includes("sec.samsung.net") || url.startsWith("file:///");
+        const isAllowed = url.includes("samsung.net") ||
+            url.includes("sec.samsung.net") ||
+            url.startsWith("file:///") ||
+            url.includes("127.0.0.1") ||
+            url.includes("localhost");
 
         if (!isAllowed) {
-            console.log("Non-PLM page focused:", url, "Clearing context.");
-            sendToLocalApp({ defect_id: "", plm_id: "", title: "", url: url });
+            console.log("Ignored domain (Not PLM/Local):", url);
+            // We NO LONGER tell the app to clear context if it's a completely foreign domain
+            // This prevents the status bar from showing 'Active' on Google.
             return;
         }
 
         // It's an allowed domain, ask the content script for metadata
         chrome.tabs.sendMessage(tabId, { action: "get_metadata" }, (response) => {
             if (chrome.runtime.lastError) {
-                // Should not happen if manifest is correct, but safety first
-                console.log("Allowed page but no content script. Clearing context.");
+                // Content script might not be injected yet or not a PLM page
+                console.log("Allowed page but no content script responder. Clearing.");
                 sendToLocalApp({ defect_id: "", plm_id: "", title: "", url: tab.url });
                 return;
             }
