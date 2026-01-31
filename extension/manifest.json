@@ -4,13 +4,13 @@
     "version": "1.0",
     "description": "Extracts PLM metadata for PLM Organizer Desktop App. Created by jino.ryu",
     "permissions": [
-        "activeTab",
         "tabs",
         "scripting"
     ],
     "host_permissions": [
         "http://127.0.0.1/*",
-        "file:///*"
+        "file:///*",
+        "https://splm.sec.samsung.net/*"
     ],
     "background": {
         "service_worker": "bg.js"
