@@ -186,7 +186,7 @@ class MainWindow(QMainWindow):
         title_row_layout.addStretch(1)
         
         # Right: Version
-        self.version_label = QLabel("v1.5.2")
+        self.version_label = QLabel("v1.5.3")
         self.version_label.setFixedWidth(60)
         self.version_label.setStyleSheet("color: #888; font-size: 11px; margin-top: 10px;")
         self.version_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
@@ -279,8 +279,8 @@ class MainWindow(QMainWindow):
 
         # Current Context Display
         context_layout = QVBoxLayout()
-        self.status_label = QLabel("Current Context: None")
-        self.status_label.setStyleSheet("background-color: #333; color: #aaa; padding: 10px; border-radius: 5px; border: 1px solid #555;")
+        self.status_label = QLabel("📁 Ready (Waiting for Data...)")
+        self.status_label.setStyleSheet("background-color: #333; color: #aaa; padding: 10px; border-radius: 5px; border: 1px solid #555; font-weight: bold;")
         self.status_label.setWordWrap(True)
         context_layout.addWidget(self.status_label)
         
@@ -325,10 +325,9 @@ class MainWindow(QMainWindow):
         # 1. Handle Empty Context (Non-PLM page or no data)
         if not defect and not plm_id and not title:
             # Revert to Ready state
-            self.current_folder_name = None
-            display_text = "📂 Ready (Waiting for Data...)"
+            display_text = "📁 Ready (Waiting for Data...)"
             self.status_label.setText(display_text)
-            self.status_label.setStyleSheet("background-color: #37474F; color: #90A4AE; padding: 15px; border-radius: 8px; border: 1px solid #455A64; font-size: 14px; font-weight: bold;")
+            self.status_label.setStyleSheet("background-color: #333; color: #aaa; padding: 10px; border-radius: 5px; border: 1px solid #555; font-weight: bold;")
             self.overlay.update_text(display_text)
             return
 
@@ -417,20 +416,16 @@ class MainWindow(QMainWindow):
             self.statusBar().addPermanentWidget(self.port_permanent_label)
 
         last_time = self.context_manager.last_heartbeat
-        if last_time == 0:
-            status = "Chrome Extension: Not Loaded"
-            color = "#FFA726;" # Vibrant Orange
+        if last_time == 0 or (time.time() - last_time) >= 15:
+            # Waiting/Not Working -> Animated dots (Red)
+            self.dot_count = (self.dot_count + 1) % 4
+            dots = "." * self.dot_count
+            status = f"Chrome Extension: Waiting{dots}"
+            color = "#F44336; font-weight: bold;" # Red
         else:
-            diff = time.time() - last_time
-            if diff < 15:
-                # Connected -> Animated dots
-                self.dot_count = (self.dot_count + 1) % 4
-                dots = "." * self.dot_count
-                status = f"Chrome Extension: Running{dots}"
-                color = "#4CAF50; font-weight: bold;" # Green
-            else:
-                status = "Chrome Extension: Not Working"
-                color = "#F44336; font-weight: bold;" # Red
+            # Connected/Active -> Static (Green)
+            status = "Chrome Extension: Active (Linked)"
+            color = "#4CAF50; font-weight: bold;" # Green
         
         self.statusBar().showMessage(status)
         self.statusBar().setStyleSheet(f"QStatusBar {{ background-color: #1e1e1e; color: {color}; font-family: 'Segoe UI'; font-size: 13px; padding-left: 5px; }}")
