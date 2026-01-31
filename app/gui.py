@@ -348,17 +348,36 @@ class MainWindow(QMainWindow):
         else:
             id_part = "Unknown"
         
-        clean_title = title
+        clean_title = title.strip() if title else ""
         if clean_title:
-             while clean_title.strip().startswith('['):
-                 end = clean_title.find(']')
-                 if end != -1:
-                     clean_title = clean_title[end+1:].strip()
-                 else:
-                     break
-             if "  " in clean_title:
-                 clean_title = clean_title.split("  ")[0]
-             clean_title = clean_title.replace(" ", "_")
+            # 1. Strip all leading brackets [], (), {} and whitespace
+            while True:
+                found_bracket = False
+                if clean_title.startswith('[') and ']' in clean_title:
+                    idx = clean_title.find(']')
+                    clean_title = clean_title[idx+1:].strip()
+                    found_bracket = True
+                elif clean_title.startswith('(') and ')' in clean_title:
+                    idx = clean_title.find(')')
+                    clean_title = clean_title[idx+1:].strip()
+                    found_bracket = True
+                elif clean_title.startswith('{') and '}' in clean_title:
+                    idx = clean_title.find('}')
+                    clean_title = clean_title[idx+1:].strip()
+                    found_bracket = True
+                if not found_bracket:
+                    break
+            
+            # 2. Stop at double space
+            if "  " in clean_title:
+                clean_title = clean_title.split("  ")[0]
+            
+            # 3. Final trim and underscore replacement
+            clean_title = clean_title.strip().replace(" ", "_")
+            
+            # 4. Limit length to 40 characters
+            if len(clean_title) > 40:
+                clean_title = clean_title[:37] + "..."
         else:
             clean_title = "Untitled"
             
