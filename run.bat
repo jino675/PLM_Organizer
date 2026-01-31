@@ -68,10 +68,18 @@ if !ERRORLEVEL! NEQ 0 (
 )
 
 echo Starting PLM Organizer...
-%PY_CMD% main.py
+start "" !PYW_CMD! main.py
+
+:: Verify if started successfully
+timeout /t 2 >nul
+tasklist /fi "imagename eq pythonw.exe" | find ":" >nul
 if !ERRORLEVEL! NEQ 0 (
+    exit
+) else (
     echo.
     echo [CRITICAL] Application failed to start.
+    echo Try running: python main.py
+    echo to see the error message.
     pause
 )
 exit

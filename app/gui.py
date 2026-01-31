@@ -171,6 +171,24 @@ class MainWindow(QMainWindow):
         self.log_area.setReadOnly(True)
         layout.addWidget(self.log_area)
 
+        # Signal for thread-safe logging
+        self.log_signal = pyqtSignal(str)
+        self.log_signal.connect(self.log_area.append)
+
+        # Redirect stdout/stderr to GUI
+        import sys
+        class LogStream:
+            def __init__(self, signal):
+                self.signal = signal
+            def write(self, text):
+                if text.strip():
+                    self.signal.emit(text.strip())
+            def flush(self):
+                pass
+
+        sys.stdout = LogStream(self.log_signal)
+        sys.stderr = LogStream(self.log_signal)
+
         # Status Bar
         self.setStatusBar(QStatusBar())
         self.statusBar().showMessage("Monitoring Active")
