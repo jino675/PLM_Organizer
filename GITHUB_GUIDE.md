@@ -46,6 +46,19 @@ cd "C:\Users\fbwls\OneDrive\문서\PLMOrganizer"
 
 ---
 
+### ⚠️ 클론 에러 발생 시 (`unable to access`, `Connection reset`)
+회사 보안망에서 Git 접속을 차단할 때 발생합니다. 아래 명령어를 차례대로 입력해 보세요.
+
+```powershell
+# 1. SSL 인증서 검증 무시
+& "C:\Program Files\Git\cmd\git.exe" config --global http.sslVerify false
+
+# 2. HTTP 버전 고정 (Connection reset 해결용)
+& "C:\Program Files\Git\cmd\git.exe" config --global http.version HTTP/1.1
+
+# 3. 그래도 안 되면? -> "방법 2: ZIP 다운로드"를 사용하세요.
+```
+
 ## 🏢 회사 PC에서 다운로드하는 방법
 
 ### 방법 1: Git Clone (권장)
