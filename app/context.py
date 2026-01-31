@@ -27,48 +27,50 @@ class ContextManager:
             plm = data.get('plm_id', '')
             id_part = defect if defect else (plm if plm else "Unknown")
             
-            # 2. Parse Title Robustly
+            # 2. Parse Title Robustly (All logic centralized here)
             raw_title = data.get('title', '')
-            # Normalize full-width characters potentially used for escaping in Ghost Bridge
-            clean_title = raw_title.replace("｜", "|").replace("］", "]").replace("［", "[").strip()
+            # Restore original characters from Ghost Bridge escaping before any processing
+            clean_title = raw_title.replace("‖", "|").replace("⦘", "]").replace("⦗", "[").strip()
             
             if clean_title:
                 # Step A: Exhaustively strip all leading metadata blocks like [...], (...), {...}
-                # and their contents, along with any leading whitespace.
+                # and their ENTIRE contents, along with any leading whitespace.
                 while True:
                     found = False
-                    clean_title = clean_title.strip()
+                    clean_title = clean_title.lstrip()
                     if not clean_title: break
                     
-                    # Handle different bracket types at the start
                     if clean_title.startswith('['):
                         end_idx = clean_title.find(']')
                         if end_idx != -1:
-                            clean_title = clean_title[end_idx+1:].strip()
+                            clean_title = clean_title[end_idx+1:]
                             found = True
                     elif clean_title.startswith('('):
                         end_idx = clean_title.find(')')
                         if end_idx != -1:
-                            clean_title = clean_title[end_idx+1:].strip()
+                            clean_title = clean_title[end_idx+1:]
                             found = True
                     elif clean_title.startswith('{'):
                         end_idx = clean_title.find('}')
                         if end_idx != -1:
-                            clean_title = clean_title[end_idx+1:].strip()
+                            clean_title = clean_title[end_idx+1:]
                             found = True
                     
                     if not found: break
                 
-                # Step B: Halt at double space
+                # Step B: Double check the stop at double space rule
                 if "  " in clean_title:
                     clean_title = clean_title.split("  ")[0]
                 
-                # Step C: Normalize all whitespace (tabs, etc) to underscores
+                # Step C: Final trimming and Regex-based whitespace normalization
                 clean_title = re.sub(r'\s+', '_', clean_title.strip())
                 
-                # Step D: Limit length to 40
+                # Step D: Enforce 40-character limit
                 if len(clean_title) > 40:
                     clean_title = clean_title[:37] + "..."
+            
+            if not clean_title:
+                clean_title = "Untitled"
             
             if not clean_title:
                 clean_title = "Untitled"
