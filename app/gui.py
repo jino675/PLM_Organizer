@@ -185,8 +185,16 @@ class MainWindow(QMainWindow):
         
         title_row_layout.addStretch(1)
         
-        # Right: Version
-        self.version_label = QLabel("v1.5.3")
+        # Right: Version (Load from VERSION file)
+        version_str = "Unknown"
+        version_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "VERSION")
+        if os.path.exists(version_path):
+            try:
+                with open(version_path, "r") as f:
+                    version_str = f.read().strip()
+            except: pass
+            
+        self.version_label = QLabel(f"v{version_str}")
         self.version_label.setFixedWidth(60)
         self.version_label.setStyleSheet("color: #888; font-size: 11px; margin-top: 10px;")
         self.version_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)

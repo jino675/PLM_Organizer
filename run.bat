@@ -1,7 +1,14 @@
 @echo off
 SETLOCAL EnableDelayedExpansion
 
-echo [PLM Organizer Launcher v1.3.6]
+:: 0. Load Version
+if exist "VERSION" (
+    set /p APP_VERSION=<VERSION
+) else (
+    set APP_VERSION=Unknown
+)
+
+echo [PLM Organizer Launcher v%APP_VERSION%]
 echo ===============================
 
 :: 1. Identify Python Command
