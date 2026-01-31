@@ -13,11 +13,15 @@ class SettingsManager:
         return cls._instance
 
     def load(self):
-        self.data = {
-            "target_folder": os.path.join(os.path.expanduser("~"), "Downloads"),
+        self.defaults = {
+            "target_folder": os.path.join(os.path.expanduser("~"), "Downloads", "MyPLM"),
             "watch_folder": os.path.join(os.path.expanduser("~"), "Downloads"),
-            "show_overlay": True
+            "show_overlay": True,
+            "always_on_top": False,
+            "overlay_anchor": "bottom-right" # bottom-right, bottom-left, top-right, top-left
         }
+        self.data = self.defaults.copy()
+
         if os.path.exists(SETTINGS_FILE):
             try:
                 with open(SETTINGS_FILE, 'r') as f:

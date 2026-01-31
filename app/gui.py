@@ -24,14 +24,20 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.watcher = watcher
         self.port = port
-        self.context_manager = ContextManager()
         self.settings_manager = SettingsManager()
+        self.overlay = ContextOverlay(self.log_message)
+        
+        # Initial Always on Top state
+        if self.settings_manager.get("always_on_top"):
+            self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
         
         # Connect signal to slot (UI Thread)
         self.context_signal.connect(self.update_status_display)
         
         # Add thread-safe observer
-        self.context_manager.add_observer(self.on_context_received)
+        # The context_manager is no longer directly managed by MainWindow,
+        # assuming it's handled externally or through the watcher.
+        # self.context_manager.add_observer(self.on_context_received) # Removed as per diff
         
         self.init_ui()
         
@@ -40,7 +46,7 @@ class MainWindow(QMainWindow):
             self.watcher.event_handler.organizer.set_callback(self.on_file_processed)
             
         # Initialize Overlay with Logger
-        self.overlay = ContextOverlay(logger=self.log_message)
+        # Overlay initialization moved up and simplified
         if self.settings_manager.get("show_overlay"):
             self.overlay.show()
         else:
@@ -52,7 +58,7 @@ class MainWindow(QMainWindow):
         self.context_signal.emit(data)
 
     def init_ui(self):
-        self.setWindowTitle(f"PLM Organizer (Port: {self.port})")
+        self.setWindowTitle("PLM Organizer") # Removed port from title
         self.setGeometry(100, 100, 600, 500)
         
         # Apply Dark Theme
@@ -118,52 +124,67 @@ class MainWindow(QMainWindow):
         # Central Widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        layout = QVBoxLayout()
-        central_widget.setLayout(layout)
-
-        # Header / Credits
-        header_layout = QHBoxLayout()
-        title = QLabel("PLM Organizer")
-        title.setStyleSheet("font-size: 18px; font-weight: bold;")
-        credits = QLabel("Created by jino.ryu")
-        credits.setStyleSheet("color: gray; font-style: italic;")
-        credits.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        main_layout = QVBoxLayout(central_widget) # Corrected layout initialization
         
-        header_layout.addWidget(title)
-        header_layout.addWidget(credits)
-        layout.addLayout(header_layout)
+        # 1. Header (Centered)
+        header_widget = QWidget()
+        header_layout = QVBoxLayout(header_widget)
+        header_layout.setContentsMargins(0, 10, 0, 10)
+        
+        self.title_label = QLabel("PLM Organizer")
+        self.title_label.setStyleSheet("font-size: 22px; font-weight: bold; color: #ffffff;")
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.credits_label = QLabel("Created by jino.ryu")
+        self.credits_label.setStyleSheet("color: #777; font-style: italic; font-size: 12px;")
+        self.credits_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        header_layout.addWidget(self.title_label)
+        header_layout.addWidget(self.credits_label)
+        main_layout.addWidget(header_widget) # Used main_layout
 
-        # Settings Section
+        # 2. Settings Section
         settings_group = QGroupBox("Settings")
         settings_layout = QVBoxLayout()
         
-        # Overlay Toggle
-        self.overlay_cb = QCheckBox("Show Desktop Overlay (Bottom-Right)")
+        # Port Info
+        port_label = QLabel(f"📡 Server Port: {self.port}")
+        port_label.setStyleSheet("color: #90A4AE; font-weight: bold; margin-bottom: 5px;")
+        settings_layout.addWidget(port_label)
+        
+        # Checkboxes Layout
+        cb_layout = QHBoxLayout()
+        self.overlay_cb = QCheckBox("Show Overlay")
         self.overlay_cb.setChecked(self.settings_manager.get("show_overlay"))
         self.overlay_cb.toggled.connect(self.toggle_overlay)
-        settings_layout.addWidget(self.overlay_cb)
+        
+        self.always_top_cb = QCheckBox("Always on Top")
+        self.always_top_cb.setChecked(self.settings_manager.get("always_on_top"))
+        self.always_top_cb.toggled.connect(self.toggle_always_on_top)
+        
+        cb_layout.addWidget(self.overlay_cb)
+        cb_layout.addWidget(self.always_top_cb)
+        settings_layout.addLayout(cb_layout)
         
         # Target Folder Selection
         folder_layout = QHBoxLayout()
-        self.folder_label = QLabel(f"Target Folder: {self.settings_manager.get('target_folder')}")
+        self.folder_label = QLabel(f"Target: {self.settings_manager.get('target_folder')}")
         self.folder_label.setStyleSheet("font-weight: bold; color: #4CAF50;") 
         self.change_folder_btn = QPushButton("Change Folder")
         self.change_folder_btn.clicked.connect(self.change_folder)
         
-        folder_layout.addWidget(self.folder_label)
+        folder_layout.addWidget(self.folder_label, 1)
         folder_layout.addWidget(self.change_folder_btn)
         settings_layout.addLayout(folder_layout)
         
-        # Control Buttons (Start/Stop)
-        control_layout = QHBoxLayout()
+        settings_group.setLayout(settings_layout)
+        main_layout.addWidget(settings_group) # Used main_layout
+        
+        # 3. Control Button (Outside and Below Settings)
         self.toggle_btn = QPushButton("Stop Monitoring")
         self.toggle_btn.clicked.connect(self.toggle_monitoring)
-        self.toggle_btn.setStyleSheet("background-color: #C62828; color: #ffffff; border: 1px solid #EF5350;")
-        control_layout.addWidget(self.toggle_btn)
-        
-        settings_layout.addLayout(control_layout)
-        settings_group.setLayout(settings_layout)
-        layout.addWidget(settings_group)
+        self.toggle_btn.setStyleSheet("background-color: #C62828; color: #ffffff; border: 1px solid #EF5350; padding: 12px; font-size: 15px;")
+        main_layout.addWidget(self.toggle_btn) # Used main_layout
 
         # Current Context Display
         context_layout = QVBoxLayout()
@@ -173,13 +194,13 @@ class MainWindow(QMainWindow):
         context_layout.addWidget(self.status_label)
         
         # Lock Status Indicator
-        layout.addLayout(context_layout)
+        main_layout.addLayout(context_layout) # Used main_layout
 
         # Logs
-        layout.addWidget(QLabel("Logs:"))
+        main_layout.addWidget(QLabel("Logs:")) # Used main_layout
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
-        layout.addWidget(self.log_area)
+        main_layout.addWidget(self.log_area) # Used main_layout
 
         # Connect log signal to log area
         self.log_signal.connect(self.log_area.append)
@@ -282,14 +303,19 @@ class MainWindow(QMainWindow):
 
     def toggle_overlay(self, checked):
         self.settings_manager.set("show_overlay", checked)
-        if checked:
-            self.overlay.show()
-            if hasattr(self, 'current_folder_name'):
-                self.overlay.update_text(f"📂 Target: {self.current_folder_name}")
-            else:
-                self.overlay.update_text("Waiting...")
-        else:
+        if not checked:
             self.overlay.hide()
+        else:
+            self.overlay.show()
+            self.overlay.reposition()
+
+    def toggle_always_on_top(self, checked):
+        self.settings_manager.set("always_on_top", checked)
+        if checked:
+            self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+        else:
+            self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowStaysOnTopHint)
+        self.show() # Required to apply flags
 
     def change_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Target Folder")
@@ -311,6 +337,7 @@ class ContextOverlay(QWidget):
     def __init__(self, logger=None):
         super().__init__()
         self.logger = logger
+        self.settings_manager = SettingsManager()
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint | 
             Qt.WindowType.WindowStaysOnTopHint | 
@@ -319,13 +346,76 @@ class ContextOverlay(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         
-        # STRICT FIXED SIZE - NEVER CHANGES
+        # STRICT FIXED SIZE
         self.FIXED_WIDTH = 350
         self.FIXED_HEIGHT = 32 
         self.setFixedSize(self.FIXED_WIDTH, self.FIXED_HEIGHT)
         
         self.display_text = "Waiting..."
+        self._dragging = False
+        self._drag_pos = None
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._dragging = True
+            self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if self._dragging and event.buttons() & Qt.MouseButton.LeftButton:
+            self.move(event.globalPosition().toPoint() - self._drag_pos)
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        if self._dragging:
+            self._dragging = False
+            self.snap_to_corner()
+            event.accept()
+
+    def snap_to_corner(self):
+        """Finds the nearest corner of the current monitor and snaps to it."""
+        screen = self.screen().availableGeometry()
+        center = self.geometry().center()
         
+        # Calculate distances to 4 corners
+        corners = {
+            "top-left": (screen.left() + 30, screen.top() + 30),
+            "top-right": (screen.right() - self.FIXED_WIDTH - 30, screen.top() + 30),
+            "bottom-left": (screen.left() + 30, screen.bottom() - self.FIXED_HEIGHT - 30),
+            "bottom-right": (screen.right() - self.FIXED_WIDTH - 30, screen.bottom() - self.FIXED_HEIGHT - 30)
+        }
+        
+        nearest_anchor = "bottom-right"
+        min_dist = float('inf')
+        
+        for anchor, (x, y) in corners.items():
+            dist = (center.x() - (x + self.FIXED_WIDTH/2))**2 + (center.y() - (y + self.FIXED_HEIGHT/2))**2
+            if dist < min_dist:
+                min_dist = dist
+                nearest_anchor = anchor
+        
+        # Save and Apply
+        self.settings_manager.set("overlay_anchor", nearest_anchor)
+        self.reposition()
+
+    def reposition(self):
+        """Positions the widget based on the saved anchor in settings."""
+        screen = self.screen().availableGeometry()
+        anchor = self.settings_manager.get("overlay_anchor", "bottom-right")
+        
+        margin = 30
+        if anchor == "top-left":
+            x, y = screen.left() + margin, screen.top() + margin
+        elif anchor == "top-right":
+            x, y = screen.right() - self.FIXED_WIDTH - margin, screen.top() + margin
+        elif anchor == "bottom-left":
+            x, y = screen.left() + margin, screen.bottom() - self.FIXED_HEIGHT - margin
+        else: # bottom-right
+            x, y = screen.right() - self.FIXED_WIDTH - margin, screen.bottom() - self.FIXED_HEIGHT - margin
+            
+        self.move(x, y)
+        self.log(f"Snapped to {anchor} at ({x}, {y})")
+
     def showEvent(self, event):
         self.reposition()
         super().showEvent(event)
@@ -335,31 +425,26 @@ class ContextOverlay(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
-        # 1. Draw Background (Semi-transparent Black/Grey)
-        # Using a rect slightly smaller than widget size to allow for smooth borders
+        # 1. Draw Background
         rect = self.rect().adjusted(2, 2, -2, -2)
-        
-        bg_color = QColor(30, 30, 30, 230) # Dark Grey, High Opacity
+        bg_color = QColor(30, 30, 30, 230)
         painter.setBrush(QBrush(bg_color))
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawRoundedRect(rect, 8, 8) # Rounded corners
+        painter.drawRoundedRect(rect, 8, 8)
         
         # 2. Draw Text
-        painter.setPen(QColor("#66BB6A")) # Green text
-        font = QFont("Segoe UI", 11) # Slightly larger, readable font
+        painter.setPen(QColor("#66BB6A"))
+        font = QFont("Segoe UI", 11)
         font.setBold(True)
         painter.setFont(font)
         
-        # Elide Text (Truncate with ...) if it fits
         metrics = QFontMetrics(font)
-        # 20px padding on sides
         elided_text = metrics.elidedText(self.display_text, Qt.TextElideMode.ElideRight, rect.width() - 20)
         
-        # Center Vertically, Align Left with padding
         text_rect = rect.adjusted(10, 0, -10, 0)
         painter.drawText(text_rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, elided_text)
         
-        # 3. Draw Border (Optional, for definition)
+        # 3. Border
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.setPen(QPen(QColor(80, 80, 80), 1))
         painter.drawRoundedRect(rect, 8, 8)
@@ -367,28 +452,11 @@ class ContextOverlay(QWidget):
     def update_text(self, text):
         if self.display_text == text:
             return
-
         self.display_text = text
-        self.log(f"Updating text: {text}")
-        
-        # Force redraw - Geometry NEVER changes so no flicker
         self.update()
-        
         if not self.isVisible():
             self.show()
-            self.reposition() # Ensure it's in the right spot if it was hidden
-
-    def reposition(self):
-        screen = self.screen().availableGeometry()
-        margin_right = 30
-        margin_bottom = 30
-        
-        # Calculate Strict Position based on FIXED dimensions
-        x = screen.width() - self.FIXED_WIDTH - margin_right
-        y = screen.height() - self.FIXED_HEIGHT - margin_bottom
-        
-        self.log(f"Pos: ({x}, {y}) | Fixed Size: {self.FIXED_WIDTH}x{self.FIXED_HEIGHT}")
-        self.move(x, y)
+            self.reposition()
 
     def log(self, msg):
         if self.logger:
