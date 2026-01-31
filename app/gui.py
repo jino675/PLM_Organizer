@@ -9,9 +9,17 @@ import os
 class LogStream:
     def __init__(self, signal):
         self.signal = signal
+        self._lock = False # Recursion protection
+
     def write(self, text):
-        if text.strip():
-            self.signal.emit(text.strip())
+        if self._lock: return
+        try:
+            self._lock = True
+            if text.strip():
+                self.signal.emit(text.strip())
+        finally:
+            self._lock = False
+
     def flush(self):
         pass
 

@@ -1,10 +1,24 @@
 import sys
 import threading
 import socket
+import traceback
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from app.gui import MainWindow
 from app.server import start_server
 from app.watcher import FileWatcher
+
+def log_uncaught_exceptions(ex_cls, ex, tb):
+    """Global handler for unhandled exceptions."""
+    err_msg = "".join(traceback.format_exception(ex_cls, ex, tb))
+    print(f"CRITICAL ERROR:\n{err_msg}")
+    try:
+        with open("error_log.txt", "a", encoding="utf-8") as f:
+            f.write(f"\n[{socket.gethostname()}] {'='*40}\n")
+            f.write(err_msg)
+    except:
+        pass
+    
+sys.excepthook = log_uncaught_exceptions
 
 def is_port_in_use(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
