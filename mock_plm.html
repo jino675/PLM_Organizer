@@ -73,45 +73,70 @@
         };
 
         function template(data) {
+            // Hardcode 18 rows for the 19th-child test
+            let rows = "";
+            for (let i = 1; i < 19; i++) {
+                rows += `<tr><td>Row ${i} (Empty)</td></tr>`;
+            }
+
             return `
-                <div class="section">
-                    <div class="row">
-                        <span class="label">System Info:</span>
-                        <span class="value">Ver 1.0</span>
-                    </div>
-                    
-                    <!-- KONA ID Section (Defect ID) -->
-                    <div class="row">
-                        <span class="label">KONA ID</span>
-                        <span class="value" id="kona-id-value">${data.defect}</span>
+                <div id="content">
+                    <!-- Selector: #content > div:nth-child(1) > table > ... -->
+                    <div class="header-box">
+                        <table border="1" style="width:100%; border-collapse: collapse;">
+                            <tbody>
+                                <tr>
+                                    <th style="width:30%; background:#f0f0f0;">
+                                        <strong>${data.plm}</strong>
+                                    </th>
+                                    <th style="text-align:left; padding:10px;">
+                                        <span class="icon">[ICON]</span> 
+                                        ${data.title} 
+                                        <span class="model-id">(MODEL_X28)</span>
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
 
-                    <!-- Title Section and PLM ID -->
-                    <div class="header-section" style="margin-top: 20px;">
-                        <h2 id="plm-title" style="white-space: pre-wrap;">${data.title}</h2>
-                        <div class="sub-info">
-                            <span class="label">PLM ID:</span>
-                            <span class="value" id="plm-id-value">${data.plm}</span>
-                        </div>
+                    <div class="row" style="margin: 20px 0;">
+                        <span class="label">System Info:</span>
+                        <span class="value">Ver 1.1 (Real-Site Mock)</span>
+                    </div>
+
+                    <!-- Selector: #content > div.dataGrid.nolist.mgT-1 > table > tbody > tr:nth-child(19) > ... -->
+                    <div class="dataGrid nolist mgT-1" style="border: 1px solid #ddd; padding: 10px;">
+                        <h3>Detailed Info (DataGrid)</h3>
+                        <table style="width:100%">
+                            <tbody>
+                                ${rows}
+                                <tr>
+                                    <td>
+                                        <table style="background: #fff8e1; border: 1px dashed #ffa000; width: 100%;">
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <span class="label">KONA ID (Link):</span>
+                                                        <a href="#" style="font-weight:bold; color:blue;">${data.defect}</a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
 
                     <!-- Download Simulation -->
-                    <div class="section" style="background-color: #eef; margin-top: 15px;">
+                    <div class="section" style="background-color: #eef; margin-top: 15px; border: 1px solid #999; padding: 15px;">
                         <h3>Downloads</h3>
                         <p>Click below to test file detection:</p>
-                        <!-- Data URI to simulate file download -->
-                        <a href="data:text/plain;charset=utf-8,This is a test file content." 
-                           download="test_file_01.txt">
-                           <button>Download Single File</button>
+                        <a href="data:text/plain;charset=utf-8,Test Content" download="test_real_structure.txt">
+                           <button>Download Simulation File</button>
                         </a>
-                        
-                        <a href="data:text/plain;charset=utf-8,This is another test file." 
-                           download="test_image.png">
-                           <button>Download Fake Image</button>
-                        </a>
-                        
                         <hr>
-                        <button onclick="bulkDownload()">Bulk Download (Simulate 3 files)</button>
+                        <button onclick="bulkDownload()">Bulk Download</button>
                     </div>
                 </div>
             `;

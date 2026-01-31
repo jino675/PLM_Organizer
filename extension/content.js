@@ -3,7 +3,7 @@
 const CONFIG = {
     selectors: {
         plmId: '#content > div:nth-child(1) > table > tbody > tr > th:nth-child(1) > strong, #plm-id-value',
-        defect_id: '#content > div.dataGrid.nolist.mgT-1 > table > tbody > tr:nth-child(19) > td > table > tbody > tr > td > a, #kona-id-value',
+        defectId: '#content > div.dataGrid.nolist.mgT-1 > table > tbody > tr:nth-child(19) > td > table > tbody > tr > td > a, #kona-id-value',
         title: '#content > div:nth-child(1) > table > tbody > tr > th:nth-child(2), #plm-title'
     },
     anchors: {
