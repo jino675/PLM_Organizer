@@ -6,6 +6,8 @@ from app.context import ContextManager
 from app.settings import SettingsManager
 import datetime
 import os
+import win32gui
+import win32con
 
 class LogStream:
     def __init__(self, signal):
@@ -146,39 +148,43 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget) # Corrected layout initialization
         
-        # 1. Header (Centered Title, Right Credits)
+        # 1. Header (Centered Title, Credits Below)
         header_widget = QWidget()
-        header_layout = QHBoxLayout(header_widget)
-        header_layout.setContentsMargins(10, 10, 10, 5)
-        
-        # Spacer for centering title
-        header_layout.addStretch(1)
+        header_layout = QVBoxLayout(header_widget)
+        header_layout.setContentsMargins(10, 15, 10, 10)
         
         self.title_label = QLabel("PLM Organizer")
-        self.title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #ffffff; letter-spacing: 1px;")
+        self.title_label.setStyleSheet("font-size: 26px; font-weight: bold; color: #ffffff; letter-spacing: 2px;")
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        header_layout.addWidget(self.title_label)
-        
-        # Another spacer to push credits to the right, but we'll use a nested layout for credits
-        header_layout.addStretch(1)
         
         self.credits_label = QLabel("Created by jino.ryu")
         self.credits_label.setStyleSheet("color: #555; font-style: italic; font-size: 11px;")
-        self.credits_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+        self.credits_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        
+        header_layout.addWidget(self.title_label)
         header_layout.addWidget(self.credits_label)
         
         main_layout.addWidget(header_widget)
 
         # 2. Settings Section
-        settings_group = QGroupBox() # Title removed to use custom header
-        settings_group.setStyleSheet("QGroupBox { border: 1px solid #444; border-radius: 8px; margin-top: 15px; padding-top: 15px; }")
+        settings_group = QGroupBox("Settings")
+        settings_group.setStyleSheet("""
+            QGroupBox { 
+                border: 1px solid #444; 
+                border-radius: 8px; 
+                margin-top: 20px; 
+                padding-top: 15px; 
+                font-weight: bold;
+                color: #81C784;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top center;
+                padding: 0 10px;
+                background-color: #2b2b2b;
+            }
+        """)
         settings_layout = QVBoxLayout()
-        
-        # Custom Settings Header
-        settings_header = QLabel("─── Settings ───")
-        settings_header.setStyleSheet("color: #81C784; font-weight: bold; font-size: 13px; margin: -25px 0 10px 0; background-color: #2b2b2b;")
-        settings_header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        settings_layout.addWidget(settings_header)
         
         # Port Info
         port_label = QLabel(f"📡 Server Port: {self.port}")
@@ -364,14 +370,11 @@ class MainWindow(QMainWindow):
 
     def toggle_always_on_top(self, checked):
         self.settings_manager.set("always_on_top", checked)
-        # Avoid full redraw flicker if possible by preserving geometry
-        geom = self.geometry()
-        if checked:
-            self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
-        else:
-            self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowStaysOnTopHint)
-        self.setGeometry(geom)
-        self.show()
+        hwnd = int(self.winId())
+        flag = win32con.HWND_TOPMOST if checked else win32con.HWND_NOTOPMOST
+        # SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE = 0x0002 | 0x0001 | 0x0010 = 19
+        win32gui.SetWindowPos(hwnd, flag, 0, 0, 0, 0, 19)
+        self.statusBar().showMessage(f"Always on Top: {'Enabled' if checked else 'Disabled'}")
 
     def change_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Target Folder")

@@ -2,7 +2,10 @@ import sys
 import threading
 import socket
 import traceback
+import os
+import ctypes
 from PyQt6.QtWidgets import QApplication, QMessageBox
+from PyQt6.QtGui import QIcon
 from app.gui import MainWindow
 from app.server import start_server
 from app.watcher import FileWatcher
@@ -25,9 +28,21 @@ def is_port_in_use(port):
         return s.connect_ex(('127.0.0.1', port)) == 0
 
 def main():
+    # Fix Taskbar Icon on Windows
+    myappid = 'jino.plm.organizer.v1'
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    except:
+        pass
+
     # Application Setup
     app = QApplication(sys.argv)
     app.setApplicationName("PLM Organizer")
+    
+    # Set Persistent App Icon
+    icon_path = os.path.join(os.path.dirname(__file__), "app", "assets", "icon.png")
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))
     
     # Dynamic Port Allocation (5555-5564)
     server_port = 5555

@@ -30,14 +30,12 @@ taskkill /f /im pythonw.exe >nul 2>&1
 
 :: 4. Launch App
 echo [*] Launching App...
-:: We use regular python.exe for now to ensure errors are VISIBLE if it crashes.
-:: We can switch back to pythonw once we confirm stability.
-%PY_CMD% main.py
-
-if !ERRORLEVEL! NEQ 0 (
-    echo.
-    echo [!] App crashed with error code !ERRORLEVEL!.
-    echo.
-    pause
+if exist "venv\Scripts\pythonw.exe" (
+    set PYW_CMD=venv\Scripts\pythonw.exe
+) else (
+    set PYW_CMD=pythonw
 )
+
+:: Launch detached and exit CMD
+start "" "%PYW_CMD%" main.py
 exit
