@@ -51,23 +51,23 @@
     <script>
         const scenarios = {
             1: {
-                defect: "DF123456-78901", // Added digit to make 5
-                plm: "P12345-67890",   // Added digit
+                defect: "DF123456-78901",
+                plm: "P000001-12345",   // 6 digits
                 title: "[ABC] Standard Title"
             },
             2: {
-                defect: "", // Empty or missing
-                plm: "P99999-00000", // Fixed to 5 digits
+                defect: "",
+                plm: "P999999-00000",   // 6 digits
                 title: "Title  with  Spaces"
             },
             3: {
-                defect: "DF987654-32100", // Fixed to 5 digits
-                plm: "P55555-55555",      // Fixed to 5 digits
+                defect: "DF987654-32100",
+                plm: "P555555-55555",   // 6 digits
                 title: "[REQ]  Title with   spaces  Final"
             },
             4: {
-                defect: "DF111111-22222", // Fixed to 5 digits
-                plm: "P77777-88888",      // Fixed to 5 digits
+                defect: "DF111111-22222",
+                plm: "P777777-88888",   // 6 digits
                 title: "[string1] [string2] this is an example  X28Q332(issue model ID)"
             }
         };

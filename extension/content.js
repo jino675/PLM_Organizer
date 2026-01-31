@@ -90,7 +90,7 @@ function parseMetadata() {
 
     // 3. Last Resort: Global Pattern (Only if still empty)
     if (!plmId && !defectId) {
-        const pMatch = document.body.innerText.match(/P\d{5,6}-\d{4,5}/);
+        const pMatch = document.body.innerText.match(/P\d{6}-\d{5}/);
         if (pMatch) plmId = pMatch[0];
     }
 
