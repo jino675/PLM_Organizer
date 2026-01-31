@@ -1,12 +1,23 @@
-// content.js
-console.log("PLM Organizer Content Script Loaded - Syncing via Ghost Title Bridge");
+// --- Configuration Section (Optimization Ready) ---
+// If you find the specific selectors using F12, we can plug them here!
+const CONFIG = {
+    selectors: {
+        defectId: '#kona-id-value', // Mock Default
+        plmId: '#plm-id-value',
+        title: '#plm-title'
+    },
+    anchors: {
+        defect: ["KONA ID", "결함 ID", "Defect ID"],
+        plm: ["PLM ID", "등록번호", "ID"],
+        title: ["Title", "제목", "Subject"]
+    }
+};
 
 // --- Ghost Title Bridge (No-Network Sync) ---
 let originalTitle = document.title;
 let lastMetadataTag = "";
 
 function syncTitle(metadata) {
-    console.log("Attempting Ghost Sync for:", metadata.defect_id || metadata.plm_id);
     if (!metadata.defect_id && !metadata.plm_id) return;
 
     const id = (metadata.defect_id || metadata.plm_id || "").substring(0, 30);
@@ -24,6 +35,7 @@ function syncTitle(metadata) {
     }, 2000);
 }
 
+// Watch for manual title changes to keep 'originalTitle' fresh
 const titleObserver = new MutationObserver(() => {
     const newTitle = document.title;
     if (!newTitle.includes("[PLM_CTX:")) {
@@ -33,40 +45,53 @@ const titleObserver = new MutationObserver(() => {
 const titleNode = document.querySelector('title');
 if (titleNode) titleObserver.observe(titleNode, { childList: true });
 
+function findValueByAnchor(keywords) {
+    const elements = document.querySelectorAll('th, td, label, span, .label');
+    for (let el of elements) {
+        const text = el.innerText.trim();
+        // Check if current element contains any of the keywords
+        if (keywords.some(k => text === k || text.includes(k + ":"))) {
+            // Priority 1: Next sibling (standard for many layouts)
+            let next = el.nextElementSibling;
+            if (next && next.innerText.trim()) return next.innerText.trim();
+
+            // Priority 2: Next cell in a table row
+            let parentNext = el.parentElement?.nextElementSibling;
+            if (parentNext && parentNext.innerText.trim()) return parentNext.innerText.trim();
+        }
+    }
+    return "";
+}
+
 function parseMetadata() {
     let defectId = "";
     let plmId = "";
     let title = "";
 
-    // 1. Check for specific Mock IDs first
-    const mockDefect = document.getElementById('kona-id-value');
-    if (mockDefect && mockDefect.innerText.trim()) defectId = mockDefect.innerText.trim();
-    const mockPlm = document.getElementById('plm-id-value');
-    if (mockPlm && mockPlm.innerText.trim()) plmId = mockPlm.innerText.trim();
-    const mockTitle = document.getElementById('plm-title');
-    if (mockTitle && mockTitle.innerText.trim()) title = mockTitle.innerText.trim();
+    // 1. Priority: Specific Selectors (Fast & Accurate)
+    const elDefect = document.querySelector(CONFIG.selectors.defectId);
+    if (elDefect) defectId = elDefect.innerText.trim();
 
-    // 2. Generic Search (Real PLM or fallback)
-    if (!defectId) {
-        const labels = document.querySelectorAll('.label, span, div, th, td');
-        for (let el of labels) {
-            if (el.innerText && el.innerText.includes("KONA ID")) {
-                let next = el.nextElementSibling;
-                if (next && next.innerText.trim()) {
-                    defectId = next.innerText.trim();
-                    break;
-                }
-            }
-        }
+    const elPlm = document.querySelector(CONFIG.selectors.plmId);
+    if (elPlm) plmId = elPlm.innerText.trim();
+
+    const elTitle = document.querySelector(CONFIG.selectors.title);
+    if (elTitle) title = elTitle.innerText.trim();
+
+    // 2. Fallback: Anchor-based search (Safe from comments)
+    if (!defectId) defectId = findValueByAnchor(CONFIG.anchors.defect);
+    if (!plmId) plmId = findValueByAnchor(CONFIG.anchors.plm);
+
+    // For title, search common headers if selector fails
+    if (!title) {
+        const h = document.querySelector('h1, h2, .page-title, .title');
+        if (h) title = h.innerText.trim();
     }
 
-    if (!plmId) {
+    // 3. Last Resort: Global Pattern (Only if still empty)
+    if (!plmId && !defectId) {
         const pMatch = document.body.innerText.match(/P\d{5,6}-\d{4,5}/);
         if (pMatch) plmId = pMatch[0];
-    }
-    if (!title) {
-        const h2 = document.querySelector('h2');
-        if (h2) title = h2.innerText.trim();
     }
 
     const data = {
@@ -83,10 +108,8 @@ function parseMetadata() {
     return data;
 }
 
-// 1. Auto-Parse on Load (Wait for page scripts)
+// Auto-Sync Setup
 setTimeout(parseMetadata, 1000);
-
-// 2. Auto-Parse on DOM Changes (Dynamic Pages)
 let debounceTimer;
 const bodyObserver = new MutationObserver(() => {
     clearTimeout(debounceTimer);
@@ -94,7 +117,6 @@ const bodyObserver = new MutationObserver(() => {
 });
 bodyObserver.observe(document.body, { childList: true, subtree: true });
 
-// 3. Listen for Background requests
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "get_metadata") {
         const data = parseMetadata();
