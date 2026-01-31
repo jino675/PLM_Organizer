@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mock PLM Page</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        .row {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .value {
+            color: #000;
+            margin-left: 10px;
+        }
+
+        .section {
+            border: 1px solid #aaa;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>PLM System Mock</h1>
+    <p>Click buttons to open scenarios in <b>New Tabs</b> to test context switching.</p>
+    <button onclick="openScenario(1)">Open Scenario 1 (Standard)</button>
+    <button onclick="openScenario(2)">Open Scenario 2 (No Defect)</button>
+    <button onclick="openScenario(3)">Open Scenario 3 (Complex)</button>
+    <button onclick="openScenario(4)">Open Scenario 4 (Real World)</button>
+    <hr>
+
+    <div id="content-area">
+        <!-- Dynamic Content Loaded Here -->
+    </div>
+
+    <script>
+        const scenarios = {
+            1: {
+                defect: "DF123456-78901", // Added digit to make 5
+                plm: "P12345-67890",   // Added digit
+                title: "[ABC] Standard Title"
+            },
+            2: {
+                defect: "", // Empty or missing
+                plm: "P99999-00000", // Fixed to 5 digits
+                title: "Title  with  Spaces"
+            },
+            3: {
+                defect: "DF987654-32100", // Fixed to 5 digits
+                plm: "P55555-55555",      // Fixed to 5 digits
+                title: "[REQ]  Title with   spaces  Final"
+            },
+            4: {
+                defect: "DF111111-22222", // Fixed to 5 digits
+                plm: "P77777-88888",      // Fixed to 5 digits
+                title: "[string1] [string2] this is an example  X28Q332(issue model ID)"
+            }
+        };
+
+        function template(data) {
+            return `
+                <div class="section">
+                    <div class="row">
+                        <span class="label">System Info:</span>
+                        <span class="value">Ver 1.0</span>
+                    </div>
+                    
+                    <!-- KONA ID Section (Defect ID) -->
+                    <div class="row">
+                        <span class="label">KONA ID</span>
+                        <span class="value" id="kona-id-value">${data.defect}</span>
+                    </div>
+
+                    <!-- Title Section and PLM ID -->
+                    <div class="header-section" style="margin-top: 20px;">
+                        <h2 id="plm-title" style="white-space: pre-wrap;">${data.title}</h2>
+                        <div class="sub-info">
+                            <span class="label">PLM ID:</span>
+                            <span class="value" id="plm-id-value">${data.plm}</span>
+                        </div>
+                    </div>
+
+                    <!-- Download Simulation -->
+                    <div class="section" style="background-color: #eef; margin-top: 15px;">
+                        <h3>Downloads</h3>
+                        <p>Click below to test file detection:</p>
+                        <!-- Data URI to simulate file download -->
+                        <a href="data:text/plain;charset=utf-8,This is a test file content." 
+                           download="test_file_01.txt">
+                           <button>Download Single File</button>
+                        </a>
+                        
+                        <a href="data:text/plain;charset=utf-8,This is another test file." 
+                           download="test_image.png">
+                           <button>Download Fake Image</button>
+                        </a>
+                        
+                        <hr>
+                        <button onclick="bulkDownload()">Bulk Download (Simulate 3 files)</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function bulkDownload() {
+            // Trigger multiple downloads
+            const download = (filename, content) => {
+                const element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+                element.setAttribute('download', filename);
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+            };
+
+            download("bulk_file_1.txt", "File 1 content");
+            setTimeout(() => download("bulk_file_2.log", "File 2 content"), 500);
+            setTimeout(() => download("bulk_file_3.data", "File 3 content"), 1000);
+        }
+
+        function getScenarioFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('scenario') || 1;
+        }
+
+        function openScenario(id) {
+            window.open(`mock_plm.html?scenario=${id}`, '_blank');
+        }
+
+        // Init
+        const currentId = getScenarioFromUrl();
+        document.getElementById('content-area').innerHTML = template(scenarios[currentId]);
+        document.title = `Mock PLM - Scenario ${currentId}`;
+    </script>
+</body>
+
+</html>
