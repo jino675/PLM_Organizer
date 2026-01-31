@@ -21,8 +21,13 @@ function syncTitle(metadata) {
     if (!metadata.defect_id && !metadata.plm_id) return;
 
     const id = (metadata.defect_id || metadata.plm_id || "").substring(0, 30);
-    const cleanTitle = (metadata.title || "Untitled").replace(/[\[\]]/g, "").trim().substring(0, 100);
-    const tag = `[PLM_CTX:${id}|${cleanTitle}]`;
+    // User Requirement: Send RAW title. Only escape characters that break the tag syntax (| and ]).
+    const rawTitle = (metadata.title || "Untitled")
+        .replace(/\|/g, "｜") // Full-width pipe replacement
+        .replace(/\]/g, "］") // Full-width bracket replacement
+        .substring(0, 150);
+
+    const tag = `[PLM_CTX:${id}|${rawTitle}]`;
 
     if (tag === lastMetadataTag) return;
     lastMetadataTag = tag;

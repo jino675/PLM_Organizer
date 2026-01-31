@@ -6,8 +6,7 @@ let currentTabId = null;
 chrome.tabs.onActivated.addListener(activeInfo => {
     currentTabId = activeInfo.tabId;
     console.log("Tab activated:", currentTabId);
-    // Add small delay to ensure content script is ready to respond
-    setTimeout(() => requestMetadataFromTab(currentTabId), 50);
+    requestMetadataFromTab(currentTabId);
 });
 
 // Listen for window focus change (focus change between windows)
@@ -19,7 +18,7 @@ chrome.windows.onFocusChanged.addListener(windowId => {
             const newTabId = tabs[0].id;
             console.log("Window focused, tab:", newTabId);
             currentTabId = newTabId;
-            setTimeout(() => requestMetadataFromTab(newTabId), 50);
+            requestMetadataFromTab(newTabId);
         }
     });
 });

@@ -29,7 +29,8 @@ class ContextManager:
             
             # 2. Parse Title Robustly
             raw_title = data.get('title', '')
-            clean_title = raw_title.strip() if raw_title else ""
+            # Normalize full-width characters potentially used for escaping in Ghost Bridge
+            clean_title = raw_title.replace("｜", "|").replace("］", "]").replace("［", "[").strip()
             
             if clean_title:
                 # Step A: Exhaustively strip all leading metadata blocks like [...], (...), {...}
@@ -39,6 +40,7 @@ class ContextManager:
                     clean_title = clean_title.strip()
                     if not clean_title: break
                     
+                    # Handle different bracket types at the start
                     if clean_title.startswith('['):
                         end_idx = clean_title.find(']')
                         if end_idx != -1:

@@ -14,8 +14,8 @@ class TitleBridge(threading.Thread):
         self.daemon = True
         self.context_manager = ContextManager()
         self.running = True
-        # Pattern: [PLM_CTX:ID|Title] - Greedy for title to capture nested brackets
-        self.pattern = re.compile(r'\[PLM_CTX:([^|]{1,30})\|(.*)\](?:\s|$)')
+        # Pattern: [PLM_CTX:ID|Title] - Greedy for title (captures until the LAST ']')
+        self.pattern = re.compile(r'^\[PLM_CTX:([^|]{1,30})\|(.*)\](?:\s|$)')
         self.last_sync_tag = ""
 
     def run(self):
