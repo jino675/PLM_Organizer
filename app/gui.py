@@ -153,15 +153,38 @@ class MainWindow(QMainWindow):
         header_layout = QVBoxLayout(header_widget)
         header_layout.setContentsMargins(10, 15, 10, 10)
         
+        # Title Row (Balanced for perfect centering)
+        title_row = QWidget()
+        title_row_layout = QHBoxLayout(title_row)
+        title_row_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Left Dummy Spacer (matched width of version label)
+        left_spacer = QLabel("")
+        left_spacer.setFixedWidth(50)
+        title_row_layout.addWidget(left_spacer)
+        
+        title_row_layout.addStretch(1)
+        
         self.title_label = QLabel("PLM Organizer")
         self.title_label.setStyleSheet("font-size: 26px; font-weight: bold; color: #ffffff; letter-spacing: 2px;")
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_row_layout.addWidget(self.title_label)
+        
+        title_row_layout.addStretch(1)
+        
+        # Version Label
+        self.version_label = QLabel("v1.4.8") # Current build version
+        self.version_label.setFixedWidth(50)
+        self.version_label.setStyleSheet("color: #444; font-size: 10px; margin-top: 10px;")
+        self.version_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+        title_row_layout.addWidget(self.version_label)
+        
+        header_layout.addWidget(title_row)
         
         self.credits_label = QLabel("Created by jino.ryu")
         self.credits_label.setStyleSheet("color: #555; font-style: italic; font-size: 11px;")
         self.credits_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         
-        header_layout.addWidget(self.title_label)
         header_layout.addWidget(self.credits_label)
         
         main_layout.addWidget(header_widget)
