@@ -1,0 +1,138 @@
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 438, in showEvent
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor", "bottom-right")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 64, in delayed_setup
+    self.overlay.reposition()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor", "bottom-right")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 390, in mouseReleaseEvent
+    self.snap_to_corner()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 417, in snap_to_corner
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor", "bottom-right")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 390, in mouseReleaseEvent
+    self.snap_to_corner()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 417, in snap_to_corner
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 390, in mouseReleaseEvent
+    self.snap_to_corner()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 417, in snap_to_corner
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 390, in mouseReleaseEvent
+    self.snap_to_corner()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 417, in snap_to_corner
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 390, in mouseReleaseEvent
+    self.snap_to_corner()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 417, in snap_to_corner
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 390, in mouseReleaseEvent
+    self.snap_to_corner()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 417, in snap_to_corner
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 390, in mouseReleaseEvent
+    self.snap_to_corner()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 417, in snap_to_corner
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 390, in mouseReleaseEvent
+    self.snap_to_corner()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 417, in snap_to_corner
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 390, in mouseReleaseEvent
+    self.snap_to_corner()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 417, in snap_to_corner
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[Gallaxy_Book] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 390, in mouseReleaseEvent
+    self.snap_to_corner()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 417, in snap_to_corner
+    self.reposition()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
+    anchor = self.settings_manager.get("overlay_anchor")
+TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given

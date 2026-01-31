@@ -419,7 +419,9 @@ class ContextOverlay(QWidget):
     def reposition(self):
         """Positions the widget based on the saved anchor in settings."""
         screen = self.screen().availableGeometry()
-        anchor = self.settings_manager.get("overlay_anchor", "bottom-right")
+        anchor = self.settings_manager.get("overlay_anchor")
+        if not anchor:
+            anchor = "bottom-right"
         
         margin = 30
         if anchor == "top-left":
