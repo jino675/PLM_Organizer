@@ -10,9 +10,10 @@ class MainWindow(QMainWindow):
     # Signal to bridge background thread -> UI thread
     context_signal = pyqtSignal(dict)
 
-    def __init__(self, watcher):
+    def __init__(self, watcher, port=5555):
         super().__init__()
         self.watcher = watcher
+        self.port = port
         self.context_manager = ContextManager()
         self.settings_manager = SettingsManager()
         
@@ -41,7 +42,7 @@ class MainWindow(QMainWindow):
         self.context_signal.emit(data)
 
     def init_ui(self):
-        self.setWindowTitle("PLM Organizer")
+        self.setWindowTitle(f"PLM Organizer (Port: {self.port})")
         self.setGeometry(100, 100, 600, 500)
         
         # Apply Dark Theme
@@ -185,9 +186,13 @@ class MainWindow(QMainWindow):
         defect = data.get('defect_id', '')
         plm_id = data.get('plm_id', '')
         title = data.get('title', '')
+        url = data.get('url', 'Unknown Source')
+
+        # Always log that SOMETHING was received
+        id_display = defect if defect else (plm_id if plm_id else "No ID")
+        self.log_message(f"Update: {id_display} | {title if title else 'No Title'} ({url})")
         
         # 1. Handle Empty Context (Non-PLM page or no data)
-        url = data.get('url', 'Unknown Source')
         if not defect and not plm_id and not title:
             # Revert to Ready state
             self.current_folder_name = None
@@ -195,10 +200,7 @@ class MainWindow(QMainWindow):
             self.status_label.setText(display_text)
             self.status_label.setStyleSheet("background-color: #37474F; color: #90A4AE; padding: 15px; border-radius: 8px; border: 1px solid #455A64; font-size: 14px; font-weight: bold;")
             self.overlay.update_text(display_text)
-            self.log_message(f"Context Cleared: Focused on non-PLM page ({url})")
             return
-
-        self.log_message(f"Context Received: {defect if defect else plm_id} | {title} ({url})")
 
         # 2. Calculate Preview Name
         id_part = ""

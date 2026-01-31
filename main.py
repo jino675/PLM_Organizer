@@ -51,7 +51,7 @@ def main():
     watcher.start()
     
     # 4. GUI
-    window = MainWindow(watcher)
+    window = MainWindow(watcher, server_port)
     window.show()
     
     sys.exit(app.exec())
