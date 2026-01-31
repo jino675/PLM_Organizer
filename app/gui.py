@@ -24,12 +24,6 @@ class MainWindow(QMainWindow):
         
         self.init_ui()
         
-        # Setup Smart Lock
-        self.lock_timer = QTimer()
-        self.lock_timer.setSingleShot(True)
-        self.lock_timer.timeout.connect(self.unlock_context)
-        self.context_locked = False
-        
         # Connect Organizer Callback
         if hasattr(self.watcher, 'event_handler'):
             self.watcher.event_handler.organizer.set_callback(self.on_file_processed)
@@ -168,12 +162,6 @@ class MainWindow(QMainWindow):
         context_layout.addWidget(self.status_label)
         
         # Lock Status Indicator
-        # Lock Status Indicator
-        self.lock_indicator = QLabel("Ready (Waiting for Data...)")
-        self.lock_indicator.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lock_indicator.setStyleSheet("color: green; font-size: 11px;")
-        context_layout.addWidget(self.lock_indicator)
-        
         layout.addLayout(context_layout)
 
         # Logs
@@ -194,9 +182,6 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(dict)
     def update_status_display(self, data):
-        if self.context_locked:
-            return
-            
         defect = data.get('defect_id', '')
         plm_id = data.get('plm_id', '')
         title = data.get('title', '')
@@ -236,26 +221,9 @@ class MainWindow(QMainWindow):
         self.overlay.update_text(display_text)
 
     def on_file_processed(self, dest_path):
-        self.lock_context(duration_sec=60)
-        self.log_message(f"Processed: {os.path.basename(dest_path)}")
-
-    def lock_context(self, duration_sec=60):
-        self.context_locked = True
-        self.lock_timer.start(duration_sec * 1000)
-        
-        folder = getattr(self, 'current_folder_name', 'Unknown')
-        self.lock_indicator.setText(f"⏳ Processing... Locked to:\n{folder}\n({duration_sec}s remaining)")
-        self.lock_indicator.setStyleSheet("color: #D32F2F; font-weight: bold; background-color: #FFEBEE; padding: 10px; border-radius: 5px; border: 1px solid #D32F2F;")
-        self.log_message(f"Smart Lock Active ({duration_sec}s)")
-
-    def unlock_context(self):
-        self.context_locked = False
-        self.lock_indicator.setText("✅ Ready (Waiting for files...)")
-        self.lock_indicator.setStyleSheet("color: green; padding: 5px;")
-        self.log_message("Smart Lock Released")
-        
-        data = self.context_manager.get_context()
-        self.update_status_display(data)
+        folder_name = os.path.basename(os.path.dirname(dest_path))
+        file_name = os.path.basename(dest_path)
+        self.log_message(f"✅ Moved: {file_name} -> 📂 {folder_name}")
 
     def toggle_monitoring(self):
         if self.monitoring_active:
