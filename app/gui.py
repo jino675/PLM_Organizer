@@ -38,6 +38,7 @@ class MainWindow(QMainWindow):
         self.port = port
         self.settings_manager = SettingsManager()
         self.context_manager = ContextManager()
+        self.dot_count = 0  # Animation counter
         
         # Connect signals
         self.context_signal.connect(self.update_status_display)
@@ -163,13 +164,13 @@ class MainWindow(QMainWindow):
         title_row_layout = QHBoxLayout(title_row)
         title_row_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Left: Logo
+        # Left: Logo (Enlarged and Vertically Centered)
         self.logo_label = QLabel()
         if os.path.exists(icon_path):
             from PyQt6.QtGui import QPixmap
-            pixmap = QPixmap(icon_path).scaled(40, 40, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            pixmap = QPixmap(icon_path).scaled(48, 48, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.logo_label.setPixmap(pixmap)
-        self.logo_label.setFixedWidth(60)
+        self.logo_label.setFixedWidth(64)
         self.logo_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         title_row_layout.addWidget(self.logo_label)
         
@@ -211,8 +212,9 @@ class MainWindow(QMainWindow):
                 color: #81C784;
             }
             QGroupBox::title {
-                subcontrol-origin: margin;
+                subcontrol-origin: border;
                 subcontrol-position: top center;
+                top: -10px;
                 padding: 0 10px;
                 background-color: #2b2b2b;
             }
@@ -410,25 +412,25 @@ class MainWindow(QMainWindow):
         self.log_message(f"Always on Top: {'Enabled' if checked else 'Disabled'}")
 
     def update_health_status(self):
-        """Update the status bar with extension connection health."""
+        """Update the status bar with extension connection health and animation."""
         last_time = self.context_manager.last_heartbeat
         if last_time == 0:
-            status = "Extension: Waiting..."
-            color = "#aaa;"
+            status = "Chrome Extension: Not Loaded"
+            color = "#888;"
         else:
             diff = time.time() - last_time
-            if diff < 10:
-                status = "Extension: Connected"
+            if diff < 15:
+                # Connected -> Animated dots
+                self.dot_count = (self.dot_count + 1) % 4
+                dots = "." * self.dot_count
+                status = f"Chrome Extension: Running{dots}"
                 color = "#4CAF50; font-weight: bold;"
-            elif diff < 60:
-                status = f"Extension: Idle ({int(diff)}s ago)"
-                color = "#FFC107;"
             else:
-                status = "Extension: Lost Connection"
+                status = "Chrome Extension: Not Working"
                 color = "#F44336; font-weight: bold;"
         
         self.statusBar().showMessage(status)
-        self.statusBar().setStyleSheet(f"color: {color}")
+        self.statusBar().setStyleSheet(f"color: {color}; font-family: 'Segoe UI'; font-size: 13px; padding-left: 5px;")
 
     def change_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Target Folder")
