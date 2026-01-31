@@ -1,5 +1,6 @@
 import time
 import os
+import json
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from app.organizer import Organizer
@@ -21,12 +22,31 @@ class DownloadHandler(FileSystemEventHandler):
 
     def process(self, file_path):
         filename = os.path.basename(file_path)
-        # Ignore temporary download files
+        
+        # 1. Ninja Mode: Check if this is a context bridge file
+        # Matches "_plm_context.json" or "_plm_context (1).json" etc.
+        if filename.startswith("_plm_context") and filename.endswith(".json"):
+            print(f"Ninja Mode: Received context file {filename}")
+            try:
+                # Small delay to ensure file is written
+                time.sleep(0.5)
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    from app.context import ContextManager
+                    ContextManager().update_context(data)
+                
+                # Instantly delete to keep the folder clean
+                os.remove(file_path)
+                print("Ninja Mode: Context updated and bridge file deleted.")
+            except Exception as e:
+                print(f"Ninja Mode Error: {e}")
+            return
+
+        # 2. Ignore other temporary download files
         if filename.endswith('.crdownload') or filename.endswith('.tmp') or filename.endswith('.download'):
             return
         
-        # Optional: Check if file is completely written?
-        # For now, just call organizer.
+        # 3. Regular File Processing
         print(f"New file detected: {file_path}")
         # Small delay to ensure handle release?
         time.sleep(1)

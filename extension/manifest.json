@@ -6,13 +6,13 @@
     "permissions": [
         "activeTab",
         "tabs",
-        "scripting"
+        "scripting",
+        "downloads"
     ],
     "host_permissions": [
         "http://127.0.0.1/*",
         "file:///*",
-        "*://*.sec.samsung.net/*",
-        "*://*.samsung.net/*"
+        "*://splm.sec.samsung.net/*"
     ],
     "background": {
         "service_worker": "bg.js"
@@ -20,8 +20,7 @@
     "content_scripts": [
         {
             "matches": [
-                "*://*.sec.samsung.net/*",
-                "*://*.samsung.net/*",
+                "*://splm.sec.samsung.net/*",
                 "file:///*"
             ],
             "js": [

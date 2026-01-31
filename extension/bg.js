@@ -67,22 +67,61 @@ let currentPort = 5555;
 const START_PORT = 5555;
 const END_PORT = 5564;
 
-async function sendToLocalApp(data) {
-    let success = await trySend(currentPort, data);
-    if (success) return;
+// Track last sent data to avoid redundant Ninja Mode downloads
+let lastSentData = null;
 
-    // If failed, scan for new port
+async function sendToLocalApp(data) {
+    // 1. Try Primary (Network)
+    let success = await trySend(currentPort, data);
+    if (success) {
+        lastSentData = JSON.stringify(data);
+        return;
+    }
+
+    // 2. Scan ports if first attempt failed
     console.log(`Port ${currentPort} failed. Scanning for active server...`);
     const foundPort = await scanForPort();
 
     if (foundPort) {
         currentPort = foundPort;
         console.log(`Discovered active server on port ${currentPort}`);
-        // Retry sending to the new port
-        await trySend(currentPort, data);
-    } else {
-        console.error("Could not find PLM Organizer server on ports 5555-5564.");
+        success = await trySend(currentPort, data);
+        if (success) {
+            lastSentData = JSON.stringify(data);
+            return;
+        }
     }
+
+    // 3. Last Resort: Ninja Mode (File-based Bridge)
+    // Only download if data has changed to avoid spamming downloads
+    const dataStr = JSON.stringify(data);
+    if (dataStr !== lastSentData) {
+        console.warn("Network 100% blocked. Using Ninja Mode (File Bridge)...");
+        saveToFileBridge(data);
+        lastSentData = dataStr;
+    }
+}
+
+function saveToFileBridge(data) {
+    const json = JSON.stringify(data);
+    const blob = new Blob([json], { type: "application/json" });
+    const reader = new FileReader();
+
+    reader.onload = function () {
+        chrome.downloads.download({
+            url: reader.result,
+            filename: "_plm_context.json",
+            conflictAction: "overwrite",
+            saveAs: false
+        }, (downloadId) => {
+            if (chrome.runtime.lastError) {
+                console.error("Ninja Mode Failed:", chrome.runtime.lastError.message);
+            } else {
+                console.log("Ninja Mode: Metadata file sent to Downloads folder.", downloadId);
+            }
+        });
+    };
+    reader.readAsDataURL(blob);
 }
 
 async function trySend(port, data) {
