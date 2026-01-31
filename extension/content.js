@@ -1,15 +1,16 @@
 // content.js
-console.log("PLM Organizer Content Script Loaded");
+console.log("PLM Organizer Content Script Loaded - Syncing via Ghost Title Bridge");
 
 // --- Ghost Title Bridge (No-Network Sync) ---
 let originalTitle = document.title;
 let lastMetadataTag = "";
 
 function syncTitle(metadata) {
+    console.log("Attempting Ghost Sync for:", metadata.defect_id || metadata.plm_id);
     if (!metadata.defect_id && !metadata.plm_id) return;
 
-    const id = metadata.defect_id || metadata.plm_id;
-    const cleanTitle = (metadata.title || "Untitled").replace(/[\[\]]/g, "").trim();
+    const id = (metadata.defect_id || metadata.plm_id || "").substring(0, 30);
+    const cleanTitle = (metadata.title || "Untitled").replace(/[\[\]]/g, "").trim().substring(0, 100);
     const tag = `[PLM_CTX:${id}|${cleanTitle}]`;
 
     if (tag === lastMetadataTag) return;
