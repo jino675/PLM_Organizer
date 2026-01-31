@@ -2,9 +2,9 @@
 // If you find the specific selectors using F12, we can plug them here!
 const CONFIG = {
     selectors: {
-        plmId: '#content > div:nth-child(1) > table > tbody > tr > th:nth-child(1) > strong',
-        defectId: '#content > div.dataGrid.nolist.mgT-1 > table > tbody > tr:nth-child(19) > td > table > tbody > tr > td > a',
-        title: '#content > div:nth-child(1) > table > tbody > tr > th:nth-child(2)'
+        plmId: '#content > div:nth-child(1) > table > tbody > tr > th:nth-child(1) > strong, #plm-id-value',
+        defect_id: '#content > div.dataGrid.nolist.mgT-1 > table > tbody > tr:nth-child(19) > td > table > tbody > tr > td > a, #kona-id-value',
+        title: '#content > div:nth-child(1) > table > tbody > tr > th:nth-child(2), #plm-title'
     },
     anchors: {
         defect: ["KONA ID", "결함 ID", "Defect ID"],
