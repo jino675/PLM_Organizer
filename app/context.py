@@ -20,7 +20,50 @@ class ContextManager:
         Update the current PLM context (metadata).
         data: dict containing 'defect_id', 'plm_id', 'title'
         """
+        import re
         with self._lock:
+            # 1. Determine ID part
+            defect = data.get('defect_id', '')
+            plm = data.get('plm_id', '')
+            id_part = defect if defect else (plm if plm else "Unknown")
+            
+            # 2. Parse Title Robustly
+            raw_title = data.get('title', '')
+            clean_title = raw_title.strip() if raw_title else ""
+            
+            if clean_title:
+                # Step A: Strip all leading brackets and junk
+                while True:
+                    found = False
+                    # Pattern: starts with [ or ( or { followed by matching end
+                    if clean_title.startswith('[') and ']' in clean_title:
+                        clean_title = clean_title[clean_title.find(']')+1:].strip()
+                        found = True
+                    elif clean_title.startswith('(') and ')' in clean_title:
+                        clean_title = clean_title[clean_title.find(')')+1:].strip()
+                        found = True
+                    elif clean_title.startswith('{') and '}' in clean_title:
+                        clean_title = clean_title[clean_title.find('}')+1:].strip()
+                        found = True
+                    if not found: break
+                
+                # Step B: Halt at double space
+                if "  " in clean_title:
+                    clean_title = clean_title.split("  ")[0]
+                
+                # Step C: Normalize all whitespace (tabs, etc) to underscores
+                clean_title = re.sub(r'\s+', '_', clean_title.strip())
+                
+                # Step D: Limit length to 40
+                if len(clean_title) > 40:
+                    clean_title = clean_title[:37] + "..."
+            
+            if not clean_title:
+                clean_title = "Untitled"
+                
+            # 3. Finalize Folder Name
+            data['folder_name'] = f"[{id_part}]_{clean_title}"
+            
             self.current_data = data
             self.last_heartbeat = time.time()
             self.notify_observers()

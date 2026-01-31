@@ -2,9 +2,10 @@ from flask import Flask, request, jsonify
 from app.context import ContextManager
 import logging
 
-# Disable default flask logging to avoid clutter
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+# Disable all flask/werkzeug logging to avoid clutter and popup windows
+import os
+os.environ["WERKZEUG_RUN_MAIN"] = "true"  # Silence the "Debug mode" banner
+logging.getLogger('werkzeug').disabled = True
 
 app = Flask(__name__)
 context_manager = ContextManager()

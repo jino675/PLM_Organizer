@@ -1,8 +1,12 @@
 import sys
-import threading
-import socket
-import traceback
 import os
+import io
+
+# 0. EARLY STEALTH: Redirect stdout/stderr immediately to suppress popup windows
+sys.stdout = io.StringIO()
+sys.stderr = io.StringIO()
+
+import threading
 import ctypes
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from PyQt6.QtGui import QIcon

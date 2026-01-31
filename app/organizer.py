@@ -14,10 +14,6 @@ class Organizer:
         self.on_success_callback = callback
 
 
-    def sanitize_filename(self, name):
-        # Remove characters invalid for Windows filenames
-        return re.sub(r'[<>:"/\\|?*]', '_', name)
-
     def organize_file(self, file_path):
         """
         Move the file to the appropriate folder based on current context.
@@ -28,31 +24,13 @@ class Organizer:
             print(f"Skipping {file_path}: No active PLM context.")
             return
 
-        defect_id = context.get('defect_id')
-        plm_id = context.get('plm_id')
-        title = context.get('title')
-
-        # Strictly check for valid context
-        if not defect_id and not plm_id:
-            print(f"Skipping {file_path}: No valid ID context (Defect or PLM ID missing).")
+        # Use the ALREADY pre-calculated folder name from the context
+        folder_name = context.get('folder_name')
+        if not folder_name:
+            print(f"Skipping {file_path}: No valid folder name determined.")
             return
-
-        # Determine Folder Name
-        id_part = defect_id if defect_id else plm_id
             
-        # Clean title: Remove leading brackets, spaces, etc if needed.
-        # User requirement: [DefectID]_Title
-        # "Title" needs parsing: "remove leading brackets and spaces, replace middle spaces with underscore, stop at double space"
-        
-        clean_title = self.parse_title(title)
-        
-        folder_name_str = f"[{id_part}]_{clean_title}"
-        folder_name = self.sanitize_filename(folder_name_str)
-        
         # Target Directory
-        # Use parent directory of the file (which is the Watch Folder)
-        # Verify if we should use a fixed target from settings?
-        # For now, sticking to relative subfolder in the watch directory.
         base_dir = os.path.dirname(file_path)
         target_dir = os.path.join(base_dir, folder_name)
         
@@ -122,53 +100,3 @@ class Organizer:
         except Exception as e:
             print(f"Error unzipping {zip_path}: {e}")
             return False
-
-    def parse_title(self, raw_title):
-        """
-        Parses the PLM Title based on rules:
-        - Remove ALL leading metadata blocks like [...], (...), {...} and spaces.
-        - Replace internal spaces with underscore.
-        - Stop at double space.
-        - Limit to 40 characters.
-        """
-        if not raw_title:
-            return "Untitled"
-            
-        current = raw_title.strip()
-        
-        # 1. Remove all leading brackets [], (), {} and surrounding whitespace
-        while True:
-            found_bracket = False
-            # Square Brackets
-            if current.startswith('[') and ']' in current:
-                idx = current.find(']')
-                current = current[idx+1:].strip()
-                found_bracket = True
-            # Parentheses
-            elif current.startswith('(') and ')' in current:
-                idx = current.find(')')
-                current = current[idx+1:].strip()
-                found_bracket = True
-            # Curly Braces
-            elif current.startswith('{') and '}' in current:
-                idx = current.find('}')
-                current = current[idx+1:].strip()
-                found_bracket = True
-            
-            if not found_bracket:
-                break
-        
-        # 2. Stop at double space (common separator in PLM titles)
-        double_space_index = current.find("  ")
-        if double_space_index != -1:
-            current = current[:double_space_index]
-            
-        # 3. Final trim and internal space replacement
-        current = current.strip()
-        current = current.replace(" ", "_")
-        
-        # 4. Limit length to 40 characters
-        if len(current) > 40:
-            current = current[:37] + "..."
-            
-        return current if current else "Untitled"

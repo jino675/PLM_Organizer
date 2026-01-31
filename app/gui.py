@@ -330,58 +330,16 @@ class MainWindow(QMainWindow):
         id_display = defect if defect else (plm_id if plm_id else "No ID")
         self.log_message(f"Update: {id_display} | {title if title else 'No Title'} ({url})")
         
-        # 1. Handle Empty Context (Non-PLM page or no data)
+        # 1. Handle Empty Context
         if not defect and not plm_id and not title:
-            # Revert to Ready state
             display_text = "📁 Ready (Waiting for Data...)"
             self.status_label.setText(display_text)
             self.status_label.setStyleSheet("background-color: #333; color: #aaa; padding: 10px; border-radius: 5px; border: 1px solid #555; font-weight: bold;")
             self.overlay.update_text(display_text)
             return
 
-        # 2. Calculate Preview Name
-        id_part = ""
-        if defect:
-            id_part = defect
-        elif plm_id:
-            id_part = plm_id
-        else:
-            id_part = "Unknown"
-        
-        clean_title = title.strip() if title else ""
-        if clean_title:
-            # 1. Strip all leading brackets [], (), {} and whitespace
-            while True:
-                found_bracket = False
-                if clean_title.startswith('[') and ']' in clean_title:
-                    idx = clean_title.find(']')
-                    clean_title = clean_title[idx+1:].strip()
-                    found_bracket = True
-                elif clean_title.startswith('(') and ')' in clean_title:
-                    idx = clean_title.find(')')
-                    clean_title = clean_title[idx+1:].strip()
-                    found_bracket = True
-                elif clean_title.startswith('{') and '}' in clean_title:
-                    idx = clean_title.find('}')
-                    clean_title = clean_title[idx+1:].strip()
-                    found_bracket = True
-                if not found_bracket:
-                    break
-            
-            # 2. Stop at double space
-            if "  " in clean_title:
-                clean_title = clean_title.split("  ")[0]
-            
-            # 3. Final trim and underscore replacement
-            clean_title = clean_title.strip().replace(" ", "_")
-            
-            # 4. Limit length to 40 characters
-            if len(clean_title) > 40:
-                clean_title = clean_title[:37] + "..."
-        else:
-            clean_title = "Untitled"
-            
-        folder_name = f"[{id_part}]_{clean_title}"
+        # 2. Get Pre-calculated Folder Name
+        folder_name = data.get('folder_name', 'Unknown')
         self.current_folder_name = folder_name 
         
         # Update Display (Unified Format)
