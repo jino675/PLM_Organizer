@@ -5,6 +5,7 @@ from PyQt6.QtGui import QIcon, QPainter, QColor, QFont, QBrush, QPen, QFontMetri
 from app.context import ContextManager
 from app.settings import SettingsManager
 import datetime
+import time
 import os
 import win32gui
 import win32con
@@ -55,6 +56,11 @@ class MainWindow(QMainWindow):
             
         # Defer showing the overlay to ensure everything is initialized
         QTimer.singleShot(500, self.delayed_setup)
+        
+        # Status Bar Timer (Health Check)
+        self.health_timer = QTimer()
+        self.health_timer.timeout.connect(self.update_health_status)
+        self.health_timer.start(5000) # Every 5 seconds
 
     def delayed_setup(self):
         # Apply Always on Top if needed
@@ -148,20 +154,24 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget) # Corrected layout initialization
         
-        # 1. Header (Centered Title, Credits Below)
+        # 1. Header (Balanced Logo - Title - Version)
         header_widget = QWidget()
-        header_layout = QVBoxLayout(header_widget)
-        header_layout.setContentsMargins(10, 15, 10, 10)
+        header_vbox = QVBoxLayout(header_widget) # Wrap for credits below
+        header_vbox.setContentsMargins(10, 15, 10, 5)
         
-        # Title Row (Balanced for perfect centering)
         title_row = QWidget()
         title_row_layout = QHBoxLayout(title_row)
         title_row_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Left Dummy Spacer (matched width of version label)
-        left_spacer = QLabel("")
-        left_spacer.setFixedWidth(50)
-        title_row_layout.addWidget(left_spacer)
+        # Left: Logo
+        self.logo_label = QLabel()
+        if os.path.exists(icon_path):
+            from PyQt6.QtGui import QPixmap
+            pixmap = QPixmap(icon_path).scaled(40, 40, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            self.logo_label.setPixmap(pixmap)
+        self.logo_label.setFixedWidth(60)
+        self.logo_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        title_row_layout.addWidget(self.logo_label)
         
         title_row_layout.addStretch(1)
         
@@ -172,20 +182,20 @@ class MainWindow(QMainWindow):
         
         title_row_layout.addStretch(1)
         
-        # Version Label
-        self.version_label = QLabel("v1.4.8") # Current build version
-        self.version_label.setFixedWidth(50)
-        self.version_label.setStyleSheet("color: #444; font-size: 10px; margin-top: 10px;")
+        # Right: Version
+        self.version_label = QLabel("v1.5.0")
+        self.version_label.setFixedWidth(60)
+        self.version_label.setStyleSheet("color: #888; font-size: 11px; margin-top: 10px;")
         self.version_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
         title_row_layout.addWidget(self.version_label)
         
-        header_layout.addWidget(title_row)
+        header_vbox.addWidget(title_row)
         
+        # Row 2: Credits
         self.credits_label = QLabel("Created by jino.ryu")
-        self.credits_label.setStyleSheet("color: #555; font-style: italic; font-size: 11px;")
+        self.credits_label.setStyleSheet("color: #888; font-style: italic; font-size: 11px;")
         self.credits_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        
-        header_layout.addWidget(self.credits_label)
+        header_vbox.addWidget(self.credits_label)
         
         main_layout.addWidget(header_widget)
 
@@ -397,7 +407,28 @@ class MainWindow(QMainWindow):
         flag = win32con.HWND_TOPMOST if checked else win32con.HWND_NOTOPMOST
         # SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE = 0x0002 | 0x0001 | 0x0010 = 19
         win32gui.SetWindowPos(hwnd, flag, 0, 0, 0, 0, 19)
-        self.statusBar().showMessage(f"Always on Top: {'Enabled' if checked else 'Disabled'}")
+        self.log_message(f"Always on Top: {'Enabled' if checked else 'Disabled'}")
+
+    def update_health_status(self):
+        """Update the status bar with extension connection health."""
+        last_time = self.context_manager.last_heartbeat
+        if last_time == 0:
+            status = "Extension: Waiting..."
+            color = "#aaa;"
+        else:
+            diff = time.time() - last_time
+            if diff < 10:
+                status = "Extension: Connected"
+                color = "#4CAF50; font-weight: bold;"
+            elif diff < 60:
+                status = f"Extension: Idle ({int(diff)}s ago)"
+                color = "#FFC107;"
+            else:
+                status = "Extension: Lost Connection"
+                color = "#F44336; font-weight: bold;"
+        
+        self.statusBar().showMessage(status)
+        self.statusBar().setStyleSheet(f"color: {color}")
 
     def change_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Target Folder")

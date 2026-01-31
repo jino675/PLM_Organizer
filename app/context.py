@@ -1,4 +1,5 @@
 from threading import Lock
+import time
 
 class ContextManager:
     _instance = None
@@ -11,6 +12,7 @@ class ContextManager:
                     cls._instance = super(ContextManager, cls).__new__(cls)
                     cls._instance.current_data = {}
                     cls._instance.observers = []
+                    cls._instance.last_heartbeat = 0
         return cls._instance
 
     def update_context(self, data):
@@ -20,6 +22,7 @@ class ContextManager:
         """
         with self._lock:
             self.current_data = data
+            self.last_heartbeat = time.time()
             print(f"Context Updated: {self.current_data}")
             self.notify_observers()
 
