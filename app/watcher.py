@@ -65,6 +65,8 @@ class DownloadHandler(FileSystemEventHandler):
         """
         last_size = -1
         stable_count = 0
+        zero_byte_retries = 0
+        max_zero_byte_retries = 25 # 25 * 0.2s = 5 seconds
         
         # Phase 1: Size Stability
         print(f"Verifying stability for: {os.path.basename(file_path)}")
@@ -74,6 +76,15 @@ class DownloadHandler(FileSystemEventHandler):
             except FileNotFoundError:
                 return False # File disappeared (e.g. renamed/deleted)
             
+            # v1.8.3: 0-Byte Grace Period (Innorix Fix)
+            # If size is 0, we refuse to call it "stable" until we've waited at least 5 seconds.
+            # This gives download managers time to start writing data.
+            if current_size == 0 and zero_byte_retries < max_zero_byte_retries:
+                zero_byte_retries += 1
+                stable_count = 0 # Reset stability
+                time.sleep(check_interval)
+                continue
+
             if current_size == last_size:
                 stable_count += 1
             else:
