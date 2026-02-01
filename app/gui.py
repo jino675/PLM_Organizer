@@ -84,7 +84,13 @@ class MainWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("PLM Organizer") 
-        self.setGeometry(100, 100, 600, 500)
+        
+        # Window State Persistence (v1.7.13)
+        geo = self.settings_manager.get("window_geometry")
+        if geo and len(geo) == 4:
+            self.setGeometry(*geo)
+        else:
+            self.setGeometry(100, 100, 450, 700) # New Clean Default (Mobile-style)
         
         # Set App Icon
         icon_path = os.path.join(os.path.dirname(__file__), "assets", "icon.png")
@@ -492,6 +498,13 @@ class MainWindow(QMainWindow):
     def log_message(self, message):
         """Thread-safe logging by emitting a signal."""
         self.log_signal.emit(message)
+
+    def closeEvent(self, event):
+        """Save window geometry on close."""
+        rect = self.geometry().getRect() # (x, y, w, h)
+        self.settings_manager.set("window_geometry", rect)
+        self.log_message(f"Window geometry saved: {rect}")
+        super().closeEvent(event)
 
     def log_message_signal(self, message):
         """Wrapper for overlay to use the signal."""
