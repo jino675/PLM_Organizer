@@ -174,6 +174,12 @@ class FileWatcher:
         self.event_handler = DownloadHandler()
 
     def start(self):
+        # Always reload path from settings to ensure we use the latest selection
+        self.path_to_watch = self.settings_manager.get("watch_folder")
+        if not self.path_to_watch or not os.path.exists(self.path_to_watch):
+             # Fallback (Safety)
+             self.path_to_watch = os.path.join(os.path.expanduser("~"), "Downloads")
+
         if not os.path.exists(self.path_to_watch):
             print(f"Watch directory {self.path_to_watch} does not exist.")
             return
