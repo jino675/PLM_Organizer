@@ -44,14 +44,65 @@ class DownloadHandler(FileSystemEventHandler):
             return
 
         # 2. Ignore other temporary download files
-        if filename.endswith('.crdownload') or filename.endswith('.tmp') or filename.endswith('.download'):
+        ignored_exts = ['.crdownload', '.tmp', '.download', '.irx', '.partial', '.part']
+        if any(filename.lower().endswith(ext) for ext in ignored_exts):
             return
         
         # 3. Regular File Processing
         print(f"New file detected: {file_path}")
-        # Small delay to ensure handle release?
-        time.sleep(1)
-        self.organizer.organize_file(file_path)
+        
+        # 4. Verification Loop: Wait for file to be truly ready (Stable Size & Not Locked)
+        if self.wait_for_file_ready(file_path):
+            self.organizer.organize_file(file_path)
+        else:
+            print(f"Skipping {filename}: File verification failed (Locked or Unstable).")
+
+    def wait_for_file_ready(self, file_path, check_interval=1.0, stability_checks=3, lock_retries=10):
+        """
+        Ensures file is ready by:
+        1. Checking size stability (no changes for 'stability_checks' intervals).
+        2. Checking file lock (can we rename it?).
+        """
+        last_size = -1
+        stable_count = 0
+        
+        # Phase 1: Size Stability
+        print(f"Verifying stability for: {os.path.basename(file_path)}")
+        for _ in range(60): # Max 60 seconds wait for size to stabilize
+            try:
+                current_size = os.path.getsize(file_path)
+            except FileNotFoundError:
+                return False # File disappeared (e.g. renamed/deleted)
+            
+            if current_size == last_size:
+                stable_count += 1
+            else:
+                stable_count = 0 # Reset if size changed
+                
+            last_size = current_size
+            
+            if stable_count >= stability_checks:
+                break # Stable!
+            
+            time.sleep(check_interval)
+            
+        if stable_count < stability_checks:
+            print(f"Timeout waiting for size stability: {file_path}")
+            return False
+
+        # Phase 2: Lock Check (Rename Method)
+        # Try to rename the file to ITSELF. Windows throws error if locked.
+        print(f"Checking lock status for: {os.path.basename(file_path)}")
+        for attempt in range(lock_retries):
+            try:
+                os.rename(file_path, file_path)
+                return True # Success! File is free.
+            except OSError:
+                time.sleep(check_interval)
+                pass # Retry
+        
+        print(f"File is locked by another process: {file_path}")
+        return False
 
 class FileWatcher:
     def __init__(self):

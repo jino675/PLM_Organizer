@@ -69,6 +69,7 @@ class Organizer:
 
         if moved_file:
             # Check for Auto-Unzip
+            # Check for Auto-Unzip
             if moved_file.lower().endswith('.zip'):
                 print(f"ZIP detected! Starting extraction: {moved_file}")
                 self.unzip_file(moved_file)
