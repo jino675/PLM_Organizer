@@ -19,8 +19,20 @@ class SettingsManager:
             "show_overlay": True,
             "always_on_top": False,
             "auto_unzip": True,
-            "overlay_anchor": "bottom-right" # bottom-right, bottom-left, top-right, top-left
+            "overlay_anchor": "bottom-right",
+            "window_geometry": [100, 100, 450, 700] # Clean Default
         }
+        
+        # v1.8.13: Load template defaults if available
+        default_file = "settings.default.json"
+        if os.path.exists(default_file):
+            try:
+                with open(default_file, 'r') as f:
+                    template_defaults = json.load(f)
+                    self.defaults.update(template_defaults)
+            except Exception as e:
+                print(f"Error loading template defaults: {e}")
+
         self.data = self.defaults.copy()
 
         if os.path.exists(SETTINGS_FILE):
