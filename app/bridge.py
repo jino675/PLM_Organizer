@@ -22,36 +22,33 @@ class TitleBridge(threading.Thread):
         # Silence premature print to prevent pythonw window popup
         while self.running:
             try:
-                titles = []
-                def enum_callback(hwnd, _):
-                    if win32gui.IsWindowVisible(hwnd):
-                        title = win32gui.GetWindowText(hwnd)
-                        if title:
-                            titles.append(title)
+                # OPTIMIZATION (v1.7.2):
+                # Instead of scanning ALL windows (EnumWindows), only check the Foreground Window.
+                # This drastically reduces CPU usage and meets the "Only when focused" requirement.
+                hwnd = win32gui.GetForegroundWindow()
+                if hwnd:
+                    title = win32gui.GetWindowText(hwnd)
+                    if title:
+                        match = self.pattern.search(title)
+                        if match:
+                            sync_tag = match.group(0)
+                            # Only update if the tag is different OR if we need to refresh
+                            if sync_tag != self.last_sync_tag:
+                                id_val = match.group(1)
+                                title_val = match.group(2)
+                                
+                                # Update context
+                                data = {
+                                    "defect_id": id_val if id_val.startswith("DF") else "",
+                                    "plm_id": id_val if not id_val.startswith("DF") else "",
+                                    "title": title_val,
+                                    "url": "Ghost Bridge (Active Window)"
+                                }
+                                print(f"Ghost Bridge: Synced from active window -> {id_val}")
+                                self.context_manager.update_context(data)
+                                self.last_sync_tag = sync_tag
                 
-                win32gui.EnumWindows(enum_callback, None)
-
-                for title in titles:
-                    match = self.pattern.search(title)
-                    if match:
-                        sync_tag = match.group(0)
-                        if sync_tag != self.last_sync_tag:
-                            id_val = match.group(1)
-                            title_val = match.group(2)
-                            
-                            # Update context
-                            data = {
-                                "defect_id": id_val if id_val.startswith("DF") else "",
-                                "plm_id": id_val if not id_val.startswith("DF") else "",
-                                "title": title_val,
-                                "url": "Ghost Bridge (Title)"
-                            }
-                            print(f"Ghost Bridge: Synced from title -> {id_val}")
-                            self.context_manager.update_context(data)
-                            self.last_sync_tag = sync_tag
-                            break # Found one, good for this poll
-                
-                time.sleep(0.2) # FAST Poll (0.2s) for instant response
+                time.sleep(0.2) # Fast poll, but now extremely lightweight (O(1))
             except Exception as e:
                 print(f"Title Bridge Error: {e}")
                 time.sleep(1)
