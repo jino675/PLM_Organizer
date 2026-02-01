@@ -67,7 +67,7 @@ class ContextManager:
                 
                 # Step D: Enforce 40-character limit
                 if len(clean_title) > 40:
-                    clean_title = clean_title[:37] + "..."
+                    clean_title = clean_title[:38] + "__"
             
             if not clean_title:
                 clean_title = "Untitled"
