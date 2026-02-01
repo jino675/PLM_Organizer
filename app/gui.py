@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
                 background-color: #3d3d3d;
                 border: 1px solid #555;
                 padding: 8px;
-                border-radius: 8px; /* Unified Radius */
+                border-radius: 8px; /* Strict 8px */
                 color: #fff;
                 font-weight: bold;
             }
@@ -141,6 +141,7 @@ class MainWindow(QMainWindow):
                 color: #eee;
                 font-family: Consolas, monospace;
                 font-size: 12px;
+                border-radius: 8px;
             }
             QLabel {
                 color: #ddd;
@@ -149,12 +150,13 @@ class MainWindow(QMainWindow):
                 background-color: #1e1e1e;
                 color: #aaa;
             }
-            /* Scrollbar Styling for a polished look */
+            /* Scrollbar Styling */
             QScrollBar:vertical {
                 border: none;
                 background: #2b2b2b;
                 width: 10px;
                 margin: 0px 0px 0px 0px;
+                border-radius: 5px;
             }
             QScrollBar::handle:vertical {
                 background: #555;
@@ -170,25 +172,14 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget) 
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignTop) # FIX: Keep content top-aligned but allow spacing
         
-        # 1. Header (Title - Version) - REMOVED Internal Logo
+        # 1. Header (Title - Version)
         header_widget = QWidget()
         header_vbox = QVBoxLayout(header_widget)
         header_vbox.setContentsMargins(10, 15, 10, 5)
         
-        title_row = QWidget()
-        title_row_layout = QHBoxLayout(title_row)
-        title_row_layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Centered Title
-        title_row_layout.addStretch(1)
-        self.title_label = QLabel("PLM Organizer")
-        self.title_label.setStyleSheet("font-size: 26px; font-weight: bold; color: #ffffff; letter-spacing: 2px;")
-        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title_row_layout.addWidget(self.title_label)
-        title_row_layout.addStretch(1)
-        
-        # Right: Version (Load from VERSION file)
+        # Load Version (Moved up to use in Title Row)
         version_str = "Unknown"
         version_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "VERSION")
         if os.path.exists(version_path):
@@ -196,28 +187,68 @@ class MainWindow(QMainWindow):
                 with open(version_path, "r") as f:
                     version_str = f.read().strip()
             except: pass
-            
+
+        title_row = QWidget()
+        title_row_layout = QHBoxLayout(title_row)
+        title_row_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # BALANCING TRICK: Left Spacer Widget (Matches Version Width)
+        # This ensures the middle stretch pushes against equal sides, keeping Title perfectly centered.
+        balancer = QLabel()
+        balancer.setFixedWidth(60) 
+        title_row_layout.addWidget(balancer)
+        
+        title_row_layout.addStretch(1)
+        
+        self.title_label = QLabel("PLM Organizer")
+        self.title_label.setStyleSheet("font-size: 26px; font-weight: bold; color: #ffffff; letter-spacing: 2px;")
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_row_layout.addWidget(self.title_label)
+        
+        title_row_layout.addStretch(1)
+        
+        # Right: Version (v1.x.x)
         self.version_label = QLabel(f"v{version_str}")
         self.version_label.setFixedWidth(60)
-        self.version_label.setStyleSheet("color: #888; font-size: 11px; margin-top: 10px;")
+        self.version_label.setStyleSheet("color: #888; font-size: 11px; margin-bottom: 4px;")
         self.version_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
         title_row_layout.addWidget(self.version_label)
         
         header_vbox.addWidget(title_row)
         
-        # Row 2: Credits
+        # Row 2: Credits Only
+        credits_row = QHBoxLayout()
+        credits_row.addStretch(1)
+        
         self.credits_label = QLabel("Created by jino.ryu")
         self.credits_label.setStyleSheet("color: #888; font-style: italic; font-size: 11px;")
         self.credits_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        header_vbox.addWidget(self.credits_label)
+        credits_row.addWidget(self.credits_label)
+        
+        header_vbox.addLayout(credits_row)
         
         main_layout.addWidget(header_widget)
 
         # 2. Settings Section
         settings_group = QGroupBox("Settings")
-        # Stylesheet is active from global, but we can refine specific groupbox look here if needed,
-        # but the global one covers QGroupBox.
-        
+        settings_group.setStyleSheet("""
+            QGroupBox { 
+                border: 1px solid #555; 
+                border-radius: 8px; 
+                margin-top: 20px; 
+                padding-top: 15px; 
+                font-weight: bold;
+                color: #81C784; /* Green Title as requested */
+                background-color: #2b2b2b;
+            }
+            QGroupBox::title {
+                subcontrol-origin: border;
+                subcontrol-position: top center;
+                top: -10px;
+                padding: 0 10px;
+                background-color: #2b2b2b;
+            }
+        """)
         settings_layout = QVBoxLayout()
         
         # Checkboxes Layout
@@ -283,11 +314,28 @@ class MainWindow(QMainWindow):
         
         main_layout.addLayout(context_layout) 
 
-        # Logs - Now in a GroupBox!
+        # Logs - Now in a GroupBox with matching style!
         log_group = QGroupBox("Logs")
-        # Global stylesheet handles QGroupBox look (same as Settings)
+        log_group.setStyleSheet("""
+            QGroupBox { 
+                border: 1px solid #555; 
+                border-radius: 8px; 
+                margin-top: 10px; /* Slight adjust */
+                padding-top: 15px; 
+                font-weight: bold;
+                color: #81C784; /* Green Title */
+                background-color: #2b2b2b;
+            }
+            QGroupBox::title {
+                subcontrol-origin: border;
+                subcontrol-position: top center;
+                top: -10px;
+                padding: 0 10px;
+                background-color: #2b2b2b;
+            }
+        """)
         log_layout = QVBoxLayout()
-        log_layout.setContentsMargins(5, 10, 5, 5) # Slight padding inside box
+        log_layout.setContentsMargins(5, 10, 5, 5) 
         
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
@@ -325,11 +373,11 @@ class MainWindow(QMainWindow):
         id_display = defect if defect else (plm_id if plm_id else "No ID")
         self.log_message(f"Update: {id_display} | {title if title else 'No Title'} ({url})")
         
-        # 1. Handle Empty Context
+        # 1. Handle Empty context
         if not defect and not plm_id and not title:
             display_text = "📁 Ready (Waiting for Data...)"
             self.status_label.setText(display_text)
-            self.status_label.setStyleSheet("background-color: #333; color: #aaa; padding: 10px; border-radius: 8px; border: 1px solid #555; font-weight: bold;") # Unified 8px
+            self.status_label.setStyleSheet("background-color: #333; color: #aaa; padding: 10px; border-radius: 8px; border: 1px solid #555; font-weight: bold;")
             self.overlay.update_text(display_text)
             return
 
@@ -343,7 +391,7 @@ class MainWindow(QMainWindow):
             display_text = display_text[:77] + "..."
             
         self.status_label.setText(display_text)
-        self.status_label.setStyleSheet("background-color: #0D47A1; color: white; padding: 15px; border-radius: 8px; border: 1px solid #42A5F5; font-size: 14px; font-weight: bold;") # Unified 8px
+        self.status_label.setStyleSheet("background-color: #0D47A1; color: white; padding: 15px; border-radius: 8px; border: 1px solid #42A5F5; font-size: 14px; font-weight: bold;")
  
         # Update Overlay (Sync)
         self.overlay.update_text(display_text)
@@ -358,7 +406,7 @@ class MainWindow(QMainWindow):
             self.watcher.stop()
             self.monitoring_active = False
             self.toggle_btn.setText("Start Monitoring")
-            self.toggle_btn.setStyleSheet("background-color: #2E7D32; color: white; font-weight: bold; border: 1px solid #4CAF50; border-radius: 8px;") # Unified 8px
+            self.toggle_btn.setStyleSheet("background-color: #2E7D32; color: white; font-weight: bold; border: 1px solid #4CAF50; border-radius: 8px;")
             self.statusBar().showMessage("Monitoring Paused")
             self.log_message("Monitoring Paused")
             self.change_folder_btn.setEnabled(True)
@@ -366,7 +414,7 @@ class MainWindow(QMainWindow):
             self.watcher.start()
             self.monitoring_active = True
             self.toggle_btn.setText("Stop Monitoring")
-            self.toggle_btn.setStyleSheet("background-color: #C62828; color: #ffffff; border: 1px solid #EF5350; border-radius: 8px;") # Unified 8px
+            self.toggle_btn.setStyleSheet("background-color: #C62828; color: #ffffff; border: 1px solid #EF5350; border-radius: 8px;")
             self.statusBar().showMessage("Monitoring Active")
             self.log_message("Monitoring Resumed")
             self.change_folder_btn.setEnabled(False)
@@ -391,9 +439,9 @@ class MainWindow(QMainWindow):
         """Update the status bar with extension connection health and animation."""
         if not hasattr(self, 'ghost_permanent_label'):
             # Add Ghost Info to permanent area (Right side)
-            self.ghost_permanent_label = QLabel("Using Ghost Bridge  ") # Removed Only
+            self.ghost_permanent_label = QLabel("👻 Using Ghost Bridge  ") # Added Emoji
             # Removed background color, kept text style only
-            self.ghost_permanent_label.setStyleSheet("color: #90A4AE; font-weight: bold; font-family: 'Segoe UI'; font-size: 13px;") 
+            self.ghost_permanent_label.setStyleSheet("color: #90A4AE; font-weight: bold; font-family: 'Segoe UI'; font-size: 13px; background: transparent;") 
             self.statusBar().addPermanentWidget(self.ghost_permanent_label)
 
         last_time = self.context_manager.last_heartbeat
