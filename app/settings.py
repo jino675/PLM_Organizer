@@ -13,36 +13,44 @@ class SettingsManager:
         return cls._instance
 
     def load(self):
+        # 1. Minimal Technical Defaults (Safety Net)
         self.defaults = {
-            "target_folder": os.path.join(os.path.expanduser("~"), "Downloads", "MyPLM"),
-            "watch_folder": os.path.join(os.path.expanduser("~"), "Downloads"),
             "show_overlay": True,
             "always_on_top": False,
             "auto_unzip": True,
-            "overlay_anchor": "bottom-right" # bottom-right, bottom-left, top-right, top-left
+            "overlay_anchor": "bottom-right",
+            "window_geometry": [100, 100, 450, 700],
+            "target_folder": "", # Placeholder
+            "watch_folder": ""   # Placeholder
         }
         self.data = self.defaults.copy()
 
-        # v1.8.13: Load template defaults if available
-        # Fix: Use absolute path (relative to app/settings.py -> root)
+        # 2. Load Template (settings.default.json)
         base_dir = os.path.dirname(os.path.dirname(__file__))
         default_file = os.path.join(base_dir, "settings.default.json")
         
         if os.path.exists(default_file):
             try:
                 with open(default_file, 'r') as f:
-                    loaded = json.load(f)
-                    self.data.update(loaded)
+                    self.data.update(json.load(f))
             except Exception as e:
-                print(f"Error loading default settings: {e}")
+                print(f"Error loading defaults: {e}")
 
+        # 3. Load User Settings (settings.json)
         if os.path.exists(SETTINGS_FILE):
             try:
                 with open(SETTINGS_FILE, 'r') as f:
-                    loaded = json.load(f)
-                    self.data.update(loaded)
+                    self.data.update(json.load(f))
             except Exception as e:
                 print(f"Error loading settings: {e}")
+
+        # 4. Apply Dynamic Defaults (if paths are empty)
+        # JSON cannot handle "~" (Home), so we inject it here if needed.
+        if not self.data.get("target_folder"):
+            self.data["target_folder"] = os.path.join(os.path.expanduser("~"), "Downloads", "MyPLM")
+            
+        if not self.data.get("watch_folder"):
+            self.data["watch_folder"] = os.path.join(os.path.expanduser("~"), "Downloads")
 
     def save(self):
         try:
