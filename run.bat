@@ -44,5 +44,5 @@ if exist "venv\Scripts\pythonw.exe" (
 )
 
 :: Launch detached and exit CMD
-start /b "" "%PYW_CMD%" main.py
+start "" "%PYW_CMD%" main.py
 exit
