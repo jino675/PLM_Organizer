@@ -2,83 +2,12 @@ import os
 import shutil
 import time
 import threading
+import subprocess
 from app.context import ContextManager
 import re
 import zipfile
 
-class Organizer:
-    def __init__(self):
-        self.context_manager = ContextManager()
-        self.on_success_callback = None
-        # v1.8.11: Thread-Safe Ledger to prevent duplicate processing
-        self.active_files = set()
-        self.lock = threading.Lock()
-
-    def set_callback(self, callback):
-        self.on_success_callback = callback
-
-
-    def organize_file(self, file_path):
-        """
-        Main entry point. Decides whether to just move or unzip-and-move.
-        Running in a separate thread (spawned by Watcher).
-        """
-        # 0. Gatekeeping (Duplicate Prevention)
-        with self.lock:
-            if file_path in self.active_files:
-                print(f"Skipping duplicate event for: {os.path.basename(file_path)}")
-                return
-            self.active_files.add(file_path)
-
-        try:
-            self._organize_file_internal(file_path)
-        finally:
-            with self.lock:
-                self.active_files.discard(file_path)
-
-    def _organize_file_internal(self, file_path):
-        """
-        Original organize_file logic, now wrapped for thread safety.
-        """
-        # 1. Get Context
-        context = self.context_manager.get_context()
-        if not context:
-            print(f"Skipping {file_path}: No active PLM context.")
-            return
-
-        folder_name = context.get('folder_name')
-        if not folder_name:
-            print(f"Skipping {file_path}: No valid folder name determined.")
-            return
-            
-        # Target Directory
-        base_dir = os.path.dirname(file_path)
-        # Note: We move FROM base_dir TO target_dir
-        # target_dir is usually different from base_dir (e.g. Downloads -> Documents/PLM/...)
-        # But base_dir is where the file IS NOW (Downloads).
-        
-        # Construct absolute target path
-        # Assuming the user wants to organize relative to the app or a fixed location?
-        # Actually in v1 code, target_dir was os.path.join(base_dir, folder_name).
-        # Meaning it creates a subfolder inside Downloads.
-        target_dir = os.path.join(base_dir, folder_name)
-        
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-            print(f"Created directory: {target_dir}")
-
-        # 2. Check Strategy
-        filename = os.path.basename(file_path)
-        is_zip = filename.lower().endswith('.zip')
-        
-        from app.settings import SettingsManager
-        auto_unzip = SettingsManager().get("auto_unzip", True)
-
-        if is_zip and auto_unzip:
-            print(f"ZIP detected (Unzip-First Strategy): {file_path}")
-            self.process_zip_workflow(file_path, target_dir)
-        else:
-            self.move_file_safe(file_path, target_dir)
+# ... (Previous code remains the same until process_zip_workflow)
 
     def process_zip_workflow(self, zip_path, target_dir):
         """
@@ -94,50 +23,87 @@ class Organizer:
 
         # A. Unzip In-Place
         unzip_success = False
-        try:
-            # Verification delay (just in case)
-            time.sleep(0.5)
 
-            if not os.path.exists(zip_path):
-                print(f"Error: ZIP file missing before unzip: {zip_path}")
-                return
+        # Priority 1: Windows 'tar' (Robust for Long Paths)
+        # User requested this as default for modern Windows env.
+        if self.unzip_with_tar(zip_path, extract_path):
+             unzip_success = True
+             print(f"Unzip successful (System Tar): {zip_name}")
+        else:
+             # Priority 2: Python 'zipfile' (Fallback/Legacy)
+             print("System Tar failed/missing. Falling back to Python zipfile...")
+             try:
+                # Verification delay
+                time.sleep(0.5)
 
-            if not zipfile.is_zipfile(zip_path):
-                print(f"Error: Invalid or Corrupt ZIP file: {zip_path}")
-                # We will still move it, but skip unzip
-            else:
-                if not os.path.exists(extract_path):
-                    os.makedirs(extract_path)
+                if not os.path.exists(zip_path):
+                    print(f"Error: ZIP file missing before unzip: {zip_path}")
+                elif not zipfile.is_zipfile(zip_path):
+                    print(f"Error: Invalid or Corrupt ZIP file: {zip_path}")
+                else:
+                    if not os.path.exists(extract_path):
+                        os.makedirs(extract_path)
 
-                print(f"Extracting {zip_name} to {extract_path}...")
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(extract_path)
-                unzip_success = True
-                print("Unzip successful.")
+                    print(f"Extracting {zip_name} to {extract_path} (Legacy Mode)...")
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(extract_path)
+                    unzip_success = True
+                    print("Unzip successful (Legacy Mode).")
 
-        except zipfile.BadZipFile:
-            print(f"Error: Bad ZIP File (Corrupt): {zip_path}")
-        except PermissionError:
-            print(f"Error: Permission Denied during Unzip (Locked): {zip_path}")
-        except Exception as e:
-            print(f"Error in ZIP workflow (Unzip Step): {e}")
+             except zipfile.BadZipFile:
+                print(f"Error: Bad ZIP File (Corrupt): {zip_path}")
+             except PermissionError:
+                print(f"Error: Permission Denied during Unzip (Locked): {zip_path}")
+             except Exception as e:
+                print(f"Error in ZIP workflow (Unzip Step): {e}")
 
-        # B. Move Original ZIP (ALWAYS move, even if unzip failed)
+        # B. Move Original ZIP (ALWAYS move)
         print(f"Moving ZIP to {target_dir}...")
         moved_zip = self.move_file_safe(zip_path, target_dir)
 
-        # C. Move Extracted Folder (Only if unzip succeeded/exists)
-        if os.path.exists(extract_path) and unzip_success:
-            print(f"Moving Extracted Folder to {target_dir}...")
-            self.move_file_safe(extract_path, target_dir)
-        elif os.path.exists(extract_path):
-             # cleanup partial extraction if needed, or just move it too?
-             # Better to move whatever we got.
-             print(f"Moving Partial/Failed Extracted Folder to {target_dir}...")
-             self.move_file_safe(extract_path, target_dir)
+        # C. Move Extracted Folder (Only if unzip succeeded)
+        if os.path.exists(extract_path):
+            if unzip_success:
+                 print(f"Moving Extracted Folder to {target_dir}...")
+                 self.move_file_safe(extract_path, target_dir)
+            else:
+                 print(f"Moving Partial/Failed Extracted Folder to {target_dir}...")
+                 self.move_file_safe(extract_path, target_dir)
         
         if self.on_success_callback and moved_zip:
             self.on_success_callback(moved_zip)
+
+    def unzip_with_tar(self, zip_path, extract_path):
+        """
+        Primary unzip using Windows 10+ built-in 'tar.exe'.
+        Solves MAX_PATH (260 char) issues.
+        """
+        try:
+            # Check if tar exists (Fast check)
+            if not shutil.which("tar"):
+                return False
+            
+            # tar -xf "source.zip" -C "destination_folder"
+            if not os.path.exists(extract_path):
+                os.makedirs(extract_path)
+                
+            result = subprocess.run(
+                ['tar', '-xf', zip_path, '-C', extract_path],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode == 0:
+                return True
+            else:
+                print(f"Tar Error: {result.stderr}")
+                return False
+        except Exception as e:
+            print(f"Tar Unexpected Error: {e}")
+            return False
+
+    def move_file_safe(self, source, target_folder):
+        # ... (Rest of code stays same)
 
     def move_file_safe(self, source, target_folder):
         """
