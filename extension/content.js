@@ -42,11 +42,10 @@ function syncTitle(metadata) {
     console.log("[Content] Ghost Tag Applied:", tag);
     document.title = tag + " " + originalTitle;
 
-    setTimeout(() => {
-        if (document.title.startsWith(tag)) {
-            document.title = originalTitle;
-        }
-    }, 2000);
+    // v1.8.0 PERSISTENCE:
+    // Do NOT revert the title. We need the tag to stay visible to the OS 
+    // so that bridge.py knows we are still on a PLM page.
+    // If the user navigates away, the title changes naturally, causing a Context Clear.
 }
 
 // Watch for manual title changes to keep 'originalTitle' fresh
