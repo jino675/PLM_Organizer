@@ -13,15 +13,16 @@ class SilentWriter:
 if sys.executable.endswith("pythonw.exe"):
     sys.stdout = SilentWriter()
     sys.stderr = SilentWriter()
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtGui import QIcon
-from app.gui import MainWindow
-from app.watcher import FileWatcher
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
     """Global handler for unhandled exceptions."""
     err_msg = "".join(traceback.format_exception(ex_cls, ex, tb))
-    print(f"CRITICAL ERROR:\n{err_msg}")
+    # Try print (might be silent)
+    try:
+        print(f"CRITICAL ERROR:\n{err_msg}")
+    except: pass
+    
+    # Always write to file
     try:
         with open("error_log.txt", "a", encoding="utf-8") as f:
             f.write(f"\n[{os.environ.get('COMPUTERNAME', 'UNKNOWN')}] {'='*40}\n")
@@ -30,6 +31,11 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
         pass
     
 sys.excepthook = log_uncaught_exceptions
+
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui import QIcon
+from app.gui import MainWindow
+from app.watcher import FileWatcher
 
 def main():
     # Fix Taskbar Icon on Windows

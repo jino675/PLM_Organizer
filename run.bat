@@ -20,7 +20,7 @@ if exist "venv\Scripts\python.exe" (
 
 :: 2. Check and Install Dependencies
 echo [*] Checking libraries...
-%PY_CMD% -c "import PyQt6, flask, watchdog, win32gui" >nul 2>&1
+%PY_CMD% -c "import PyQt6, watchdog, win32gui" >nul 2>&1
 if !ERRORLEVEL! NEQ 0 (
     echo [!] Dependencies missing. Installing...
     %PY_CMD% -m pip install -r requirements.txt
