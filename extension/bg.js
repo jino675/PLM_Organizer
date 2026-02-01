@@ -1,4 +1,4 @@
-// PLM Organizer Helper - Background Script (v1.6.9 DEBUG)
+// PLM Organizer Helper - Background Script (v1.7.1 GHOST ONLY)
 let currentTabId = null;
 
 // [DEBUG] Logging wrapper
@@ -63,51 +63,20 @@ function requestMetadataFromTab(tabId) {
         log(`Checking permissions for URL: ${url.substring(0, 50)}... -> Allowed? ${isAllowed}`);
 
         if (!isAllowed) {
-            log("Ignored domain (Not PLM/Local). Context kept as-is.");
-            // STABLE CONTEXT: Do NOT clear context here. 
-            // This keeps the last PLM info active when switching to regular tabs.
+            log("Ignored domain (Not PLM/Local). Stay silent.");
             return;
         }
 
         log("Sending 'get_metadata' message to content script...");
         // It's an allowed domain, ask the content script for metadata
+        // Note: We don't do anything with the response here anymore.
+        // The content script will update the Window Title, which the App (Ghost Bridge) watches.
         chrome.tabs.sendMessage(tabId, { action: "get_metadata" }, (response) => {
             if (chrome.runtime.lastError) {
-                // Content script might not be injected yet or temporary error.
-                // WE DO NOT CLEAR CONTEXT HERE. Keep the last known state.
                 log("Message FAIL (Content script not ready or error):", chrome.runtime.lastError.message);
                 return;
             }
-
-            if (response) {
-                log("Message SUCCESS. Got metadata:", response);
-                sendToLocalApp(response);
-            } else {
-                log("Message SUCCESS but empty response.");
-            }
+            log("Message SUCCESS. Triggered Ghost Bridge update.");
         });
     });
-}
-
-function sendToLocalApp(data) {
-    const ports = [5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562, 5563, 5564];
-
-    const tryPort = (index) => {
-        if (index >= ports.length) {
-            log("Local server not found on ANY port. Gave up.");
-            return;
-        }
-
-        const port = ports[index];
-        // log(`Trying to send to localhost:${port}...`); // Too verbose?
-        fetch(`http://127.0.0.1:${port}/update`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-            .then(() => log(`Data successfully SENT to local app on port ${port}`))
-            .catch(() => tryPort(index + 1));
-    };
-
-    tryPort(0);
 }

@@ -32,11 +32,12 @@ class MainWindow(QMainWindow):
     context_signal = pyqtSignal(dict)
     log_signal = pyqtSignal(str)
 
-    def __init__(self, watcher, port=5555):
+    def __init__(self, watcher):
         super().__init__()
         self.watcher = watcher
-        self.port = port
-        self.settings_manager = SettingsManager()
+        
+        # Load Config
+        s_manager = SettingsManager()
         self.context_manager = ContextManager()
         self.dot_count = 0  # Animation counter
         
