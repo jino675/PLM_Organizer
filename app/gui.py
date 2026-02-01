@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
         self.watcher = watcher
         
         # Load Config
-        s_manager = SettingsManager()
+        self.settings_manager = SettingsManager()
         self.context_manager = ContextManager()
         self.dot_count = 0  # Animation counter
         

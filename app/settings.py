@@ -37,8 +37,8 @@ class SettingsManager:
         except Exception as e:
             print(f"Error saving settings: {e}")
 
-    def get(self, key):
-        return self.data.get(key)
+    def get(self, key, default=None):
+        return self.data.get(key, default)
 
     def set(self, key, value):
         self.data[key] = value

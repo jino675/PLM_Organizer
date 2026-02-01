@@ -136,3 +136,33 @@ Traceback (most recent call last):
   File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 422, in reposition
     anchor = self.settings_manager.get("overlay_anchor")
 TypeError: SettingsManager.get() takes 2 positional arguments but 3 were given
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\main.py", line 70, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\main.py", line 64, in main
+    window = MainWindow(watcher)
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 54, in __init__
+    self.init_ui()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 238, in init_ui
+    self.overlay_cb.setChecked(self.settings_manager.get("show_overlay") if self.settings_manager.get("show_overlay") is not None else True)
+                                                                            ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'settings_manager'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\main.py", line 70, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\main.py", line 64, in main
+    window = MainWindow(watcher)
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 54, in __init__
+    self.init_ui()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 238, in init_ui
+    self.overlay_cb.setChecked(self.settings_manager.get("show_overlay") if self.settings_manager.get("show_overlay") is not None else True)
+                                                                            ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'settings_manager'
