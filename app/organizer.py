@@ -90,6 +90,14 @@ class Organizer:
         """
         Extracts zip file to a subfolder of the same name.
         """
+        # v1.8.8: Grace Period for File System
+        # Give the filesystem a moment to finalize the move and release locks.
+        time.sleep(1.0) 
+
+        if not os.path.exists(zip_path):
+            print(f"Error: ZIP file not found after move: {zip_path}")
+            return False
+
         try:
             target_dir = os.path.dirname(zip_path)
             # Create extraction folder (e.g., source.zip -> source/)
