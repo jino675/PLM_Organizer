@@ -395,11 +395,11 @@ class MainWindow(QMainWindow):
 
     def update_health_status(self):
         """Update the status bar with extension connection health and animation."""
-        if not hasattr(self, 'port_permanent_label'):
-            # Add Port Info to permanent area (Right side)
-            self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
-            self.port_permanent_label.setStyleSheet("color: #90A4AE; font-weight: bold; font-family: 'Segoe UI'; font-size: 13px;")
-            self.statusBar().addPermanentWidget(self.port_permanent_label)
+        if not hasattr(self, 'ghost_permanent_label'):
+            # Add Ghost Info to permanent area (Right side)
+            self.ghost_permanent_label = QLabel("👻 Ghost Bridge Only  ")
+            self.ghost_permanent_label.setStyleSheet("color: #90A4AE; font-weight: bold; font-family: 'Segoe UI'; font-size: 13px;")
+            self.statusBar().addPermanentWidget(self.ghost_permanent_label)
 
         last_time = self.context_manager.last_heartbeat
         if last_time == 0 or (time.time() - last_time) >= 15:

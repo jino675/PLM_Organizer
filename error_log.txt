@@ -166,3 +166,206 @@ Traceback (most recent call last):
     self.overlay_cb.setChecked(self.settings_manager.get("show_overlay") if self.settings_manager.get("show_overlay") is not None else True)
                                                                             ^^^^^^^^^^^^^^^^^^^^^
 AttributeError: 'MainWindow' object has no attribute 'settings_manager'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.port_permanent_label = QLabel(f"📡 Port: {self.port}  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.ghost_permanent_label = QLabel("👻 Ghost Bridge Only  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.ghost_permanent_label = QLabel("👻 Ghost Bridge Only  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.ghost_permanent_label = QLabel("👻 Ghost Bridge Only  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.ghost_permanent_label = QLabel("👻 Ghost Bridge Only  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.ghost_permanent_label = QLabel("👻 Ghost Bridge Only  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\gui.py", line 400, in update_health_status
+    self.ghost_permanent_label = QLabel("👻 Ghost Bridge Only  ")
+                                                   ^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'port'
