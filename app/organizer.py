@@ -66,36 +66,57 @@ class Organizer:
         2. Move ZIP -> Target
         3. Move Extracted Folder -> Target
         """
-        try:
-            # A. Unzip In-Place
-            base_dir = os.path.dirname(zip_path)
-            zip_name = os.path.basename(zip_path)
-            folder_name = os.path.splitext(zip_name)[0]
-            extract_path = os.path.join(base_dir, folder_name)
+        base_dir = os.path.dirname(zip_path)
+        zip_name = os.path.basename(zip_path)
+        folder_name = os.path.splitext(zip_name)[0]
+        extract_path = os.path.join(base_dir, folder_name)
 
+        # A. Unzip In-Place
+        unzip_success = False
+        try:
             # Verification delay (just in case)
             time.sleep(0.5)
 
-            if not os.path.exists(extract_path):
-                os.makedirs(extract_path)
+            if not os.path.exists(zip_path):
+                print(f"Error: ZIP file missing before unzip: {zip_path}")
+                return
 
-            print(f"Extracting {zip_name} to {extract_path}...")
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(extract_path)
-            
-            # B. Move Original ZIP
-            print(f"Moving ZIP to {target_dir}...")
-            moved_zip = self.move_file_safe(zip_path, target_dir)
+            if not zipfile.is_zipfile(zip_path):
+                print(f"Error: Invalid or Corrupt ZIP file: {zip_path}")
+                # We will still move it, but skip unzip
+            else:
+                if not os.path.exists(extract_path):
+                    os.makedirs(extract_path)
 
-            # C. Move Extracted Folder
+                print(f"Extracting {zip_name} to {extract_path}...")
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    zip_ref.extractall(extract_path)
+                unzip_success = True
+                print("Unzip successful.")
+
+        except zipfile.BadZipFile:
+            print(f"Error: Bad ZIP File (Corrupt): {zip_path}")
+        except PermissionError:
+            print(f"Error: Permission Denied during Unzip (Locked): {zip_path}")
+        except Exception as e:
+            print(f"Error in ZIP workflow (Unzip Step): {e}")
+
+        # B. Move Original ZIP (ALWAYS move, even if unzip failed)
+        print(f"Moving ZIP to {target_dir}...")
+        moved_zip = self.move_file_safe(zip_path, target_dir)
+
+        # C. Move Extracted Folder (Only if unzip succeeded/exists)
+        if os.path.exists(extract_path) and unzip_success:
             print(f"Moving Extracted Folder to {target_dir}...")
             self.move_file_safe(extract_path, target_dir)
-            
-            if self.on_success_callback and moved_zip:
-                self.on_success_callback(moved_zip)
-
-        except Exception as e:
-            print(f"Error in ZIP workflow: {e}")
+        elif os.path.exists(extract_path):
+             # cleanup partial extraction if needed, or just move it too?
+             # Better to move whatever we got.
+             print(f"Moving Partial/Failed Extracted Folder to {target_dir}...")
+             self.move_file_safe(extract_path, target_dir)
+        
+        if self.on_success_callback and moved_zip:
+            self.on_success_callback(moved_zip)
 
     def move_file_safe(self, source, target_folder):
         """
@@ -103,6 +124,11 @@ class Organizer:
         Returns the new path.
         """
         try:
+            # v1.8.10: Check source existence to prevent race condition spam
+            if not os.path.exists(source):
+                print(f"Source not found (already moved?): {source}")
+                return None
+
             name = os.path.basename(source)
             destination = os.path.join(target_folder, name)
 
@@ -120,6 +146,10 @@ class Organizer:
                     shutil.move(source, destination)
                     print(f"Moved: {source} -> {destination}")
                     return destination
+                except FileNotFoundError:
+                    # Source disappeared during retry (Race condition resolved by other thread)
+                    print(f"Source disappeared during move: {source}")
+                    return None
                 except PermissionError:
                     time.sleep(1)
                 except Exception as e:
