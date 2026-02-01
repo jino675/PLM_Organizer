@@ -261,8 +261,13 @@ class MainWindow(QMainWindow):
         self.always_top_cb.setChecked(self.settings_manager.get("always_on_top") if self.settings_manager.get("always_on_top") is not None else False)
         self.always_top_cb.toggled.connect(self.toggle_always_on_top)
         
+        self.auto_unzip_cb = QCheckBox("Auto Unzip")
+        self.auto_unzip_cb.setChecked(self.settings_manager.get("auto_unzip", True))
+        self.auto_unzip_cb.toggled.connect(self.toggle_auto_unzip)
+        
         cb_layout.addWidget(self.overlay_cb)
         cb_layout.addWidget(self.always_top_cb)
+        cb_layout.addWidget(self.auto_unzip_cb)
         settings_layout.addLayout(cb_layout)
         
         # Target Folder Styled Field
@@ -434,6 +439,10 @@ class MainWindow(QMainWindow):
         # SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE = 0x0002 | 0x0001 | 0x0010 = 19
         win32gui.SetWindowPos(hwnd, flag, 0, 0, 0, 0, 19)
         self.log_message(f"Always on Top: {'Enabled' if checked else 'Disabled'}")
+
+    def toggle_auto_unzip(self, checked):
+        self.settings_manager.set("auto_unzip", checked)
+        self.log_message(f"Auto Unzip: {'Enabled' if checked else 'Disabled'}")
 
     def update_health_status(self):
         """Update the status bar with extension connection health and animation."""

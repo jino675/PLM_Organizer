@@ -18,6 +18,7 @@ class SettingsManager:
             "watch_folder": os.path.join(os.path.expanduser("~"), "Downloads"),
             "show_overlay": True,
             "always_on_top": False,
+            "auto_unzip": True,
             "overlay_anchor": "bottom-right" # bottom-right, bottom-left, top-right, top-left
         }
         self.data = self.defaults.copy()
