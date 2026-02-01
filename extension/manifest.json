@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "PLM Organizer Helper",
-    "version": "1.8.4",
+    "version": "1.8.5",
     "description": "Extracts PLM metadata for PLM Organizer Desktop App. Created by jino.ryu",
     "permissions": [
         "activeTab",
@@ -9,7 +9,10 @@
         "tabs"
     ],
     "host_permissions": [
-        "*://*/*"
+        "https://splm.sec.samsung.net/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "file:///*"
     ],
     "background": {
         "service_worker": "bg.js"
@@ -17,7 +20,10 @@
     "content_scripts": [
         {
             "matches": [
-                "*://*/*"
+                "https://splm.sec.samsung.net/*",
+                "http://localhost/*",
+                "http://127.0.0.1/*",
+                "file:///*"
             ],
             "js": [
                 "content.js"
