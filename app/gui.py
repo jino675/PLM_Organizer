@@ -385,9 +385,8 @@ class MainWindow(QMainWindow):
         valid = target_folder and os.path.isdir(target_folder)
         
         if valid:
-            # Auto-start logic
-            if not self.watcher.observer.is_alive():
-                 self.watcher.start()
+            # Auto-start logic (Watcher handles duplicate start safely)
+            self.watcher.start()
             
             self.monitoring_active = True
             self.toggle_btn.setText("Stop Monitoring")
@@ -397,9 +396,8 @@ class MainWindow(QMainWindow):
             self.log_message("Monitoring Started")
             self.change_folder_btn.setEnabled(False) 
         else:
-            # Invalid State
-            if self.watcher.observer.is_alive():
-                self.watcher.stop()
+            # Invalid State (Watcher handles stop safely)
+            self.watcher.stop()
                 
             self.monitoring_active = False
             self.toggle_btn.setText("⚠️ Select Target Folder")
