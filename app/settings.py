@@ -35,6 +35,19 @@ class SettingsManager:
 
         self.data = self.defaults.copy()
 
+        # v1.8.13: Load template defaults if available
+        # Fix: Use absolute path (relative to app/settings.py -> root)
+        base_dir = os.path.dirname(os.path.dirname(__file__))
+        default_file = os.path.join(base_dir, "settings.default.json")
+        
+        if os.path.exists(default_file):
+            try:
+                with open(default_file, 'r') as f:
+                    loaded = json.load(f)
+                    self.data.update(loaded)
+            except Exception as e:
+                print(f"Error loading default settings: {e}")
+
         if os.path.exists(SETTINGS_FILE):
             try:
                 with open(SETTINGS_FILE, 'r') as f:
