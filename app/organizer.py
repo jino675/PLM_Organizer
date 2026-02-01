@@ -175,9 +175,6 @@ class Organizer:
             return False
 
     def move_file_safe(self, source, target_folder):
-        # ... (Rest of code stays same)
-
-    def move_file_safe(self, source, target_folder):
         """
         Moves a file OR directory to target_folder, handling duplicates.
         Returns the new path.
