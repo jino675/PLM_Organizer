@@ -1,6 +1,7 @@
 import time
 import os
 import json
+import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from app.organizer import Organizer
@@ -12,13 +13,15 @@ class DownloadHandler(FileSystemEventHandler):
     def on_created(self, event):
         if event.is_directory:
             return
-        self.process(event.src_path)
+        # v1.8.7: Parallel Processing
+        # Spawn thread so one large download doesn't block checking of other files
+        threading.Thread(target=self.process, args=(event.src_path,), daemon=True).start()
 
     def on_moved(self, event):
         if event.is_directory:
             return
         # When browser finishes download (rename .crdownload -> .zip), it triggers on_moved
-        self.process(event.dest_path)
+        threading.Thread(target=self.process, args=(event.dest_path,), daemon=True).start()
 
     def process(self, file_path):
         filename = os.path.basename(file_path)
@@ -57,6 +60,38 @@ class DownloadHandler(FileSystemEventHandler):
         else:
             print(f"Skipping {filename}: File verification failed (Locked or Unstable).")
 
+    def is_folder_busy(self, target_file_path, window_seconds=3.0):
+        """
+        Checks if ANY other file in the directory has been modified recently.
+        Used to detect if a batch download is in progress.
+        """
+        try:
+            folder = os.path.dirname(target_file_path)
+            now = time.time()
+            
+            # Fast scan using os.scandir
+            with os.scandir(folder) as it:
+                for entry in it:
+                    if not entry.is_file(): continue
+                    if entry.path == target_file_path: continue # Don't check self
+                    
+                    # Ignore partial files (they are obviously busy but we ignore them elsewhere)
+                    if any(entry.name.lower().endswith(ext) for ext in ['.crdownload', '.tmp', '.part']):
+                        # However, a .crdownload updating MEANS the folder is busy!
+                        # So actually we SHOULD check them.
+                        pass 
+
+                    try:
+                        # Check modification time
+                        if now - entry.stat().st_mtime < window_seconds:
+                            # Found an active neighbor!
+                            return True
+                    except OSError:
+                        pass # File locked or gone, ignore
+        except Exception:
+            pass
+        return False
+
     def wait_for_file_ready(self, file_path, check_interval=0.2, stability_checks=3, lock_retries=50):
         """
         Ensures file is ready by:
@@ -70,20 +105,31 @@ class DownloadHandler(FileSystemEventHandler):
         
         # Phase 1: Size Stability
         print(f"Verifying stability for: {os.path.basename(file_path)}")
-        for _ in range(150): # Max 30 seconds (150 * 0.2) wait for size to stabilize
+        for i in range(150): # Max 30 seconds (150 * 0.2) wait for size to stabilize
             try:
                 current_size = os.path.getsize(file_path)
             except FileNotFoundError:
                 return False # File disappeared (e.g. renamed/deleted)
             
-            # v1.8.3: 0-Byte Grace Period (Innorix Fix)
-            # If size is 0, we refuse to call it "stable" until we've waited at least 5 seconds.
-            # This gives download managers time to start writing data.
-            if current_size == 0 and zero_byte_retries < max_zero_byte_retries:
-                zero_byte_retries += 1
-                stable_count = 0 # Reset stability
-                time.sleep(check_interval)
-                continue
+            # v1.8.7: Queue-Aware Batch Logic
+            # If I am 0 bytes...
+            if current_size == 0:
+                # Check if my neighbors are busy (Batch Download in progress?)
+                if self.is_folder_busy(file_path):
+                    # Neighbors are active! I should wait my turn.
+                    # Reset my wait counter so I don't timeout prematurely.
+                    zero_byte_retries = 0 
+                    stable_count = 0
+                    time.sleep(check_interval)
+                    continue
+
+                # No neighbors are active. It's just me.
+                # Use the Grace Period logic (v1.8.3)
+                if zero_byte_retries < max_zero_byte_retries:
+                    zero_byte_retries += 1
+                    stable_count = 0
+                    time.sleep(check_interval)
+                    continue
 
             if current_size == last_size:
                 stable_count += 1
