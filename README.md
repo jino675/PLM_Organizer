@@ -87,4 +87,4 @@ To distribute this application to users who don't have Python installed:
 - **v1.8.7**: Batch download race condition fix.
 
 ---
-*Created by [Your Name/Team]*
+*Created by jino.ryu using Antigravity*
