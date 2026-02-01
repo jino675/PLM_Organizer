@@ -64,7 +64,12 @@ def main():
     window = MainWindow(watcher)
     window.show()
     
-    sys.exit(app.exec())
+    exit_code = app.exec()
+    
+    # v1.8.1: Strict Shutdown
+    # Force kill all threads (including TitleBridge) to prevent zombie processes.
+    print("[Main] Shutting down...")
+    os._exit(exit_code) # os._exit is stronger than sys.exit
 
 if __name__ == "__main__":
     main()

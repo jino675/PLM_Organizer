@@ -1,7 +1,11 @@
 import time
 import threading
 import re
+import os
 import win32gui
+import win32process
+import win32api
+import win32con
 from app.context import ContextManager
 
 class TitleBridge(threading.Thread):
@@ -17,6 +21,22 @@ class TitleBridge(threading.Thread):
         # Pattern: [PLM_CTX:ID|Title] - Greedy for title (captures until the LAST ']')
         self.pattern = re.compile(r'^\[PLM_CTX:([^|]{1,30})\|(.*)\](?:\s|$)')
         self.last_sync_tag = ""
+
+    def _get_process_name(self, hwnd):
+        """Robustly retrieve the executable name of the window's process."""
+        try:
+            _, pid = win32process.GetWindowThreadProcessId(hwnd)
+            # PROCESS_QUERY_INFORMATION (0x0400) | PROCESS_VM_READ (0x0010)
+            handle = win32api.OpenProcess(0x0410, False, pid)
+            if handle:
+                try:
+                    path = win32process.GetModuleFileNameEx(handle, 0)
+                    return os.path.basename(path).lower()
+                finally:
+                    win32api.CloseHandle(handle)
+        except:
+            pass
+        return ""
 
     def run(self):
         # Silence premature print to prevent pythonw window popup
@@ -48,18 +68,19 @@ class TitleBridge(threading.Thread):
                                 self.context_manager.update_context(data)
                                 self.last_sync_tag = sync_tag
                         else:
-                            # v1.8.0 Active Context Switching
-                            # If no tag is found, check if we are in a Browser.
-                            # If we are browsing another site (Chrome/Edge active but no tag), CLEAR context.
-                            lower_title = title.lower()
-                            browser_keywords = ["google chrome", "microsoft edge", "whale", "firefox", "brave"]
-                            is_browser = any(k in lower_title for k in browser_keywords)
+                            # v1.8.1 ROBUST DETECTION (Process-based)
+                            # Company environments often sanitize window titles (e.g. remove "Google Chrome").
+                            # We must check the ACTUAL PROCESS NAME to be 100% sure.
+                            proc_name = self._get_process_name(hwnd)
+                            browser_exes = ["chrome.exe", "msedge.exe", "whale.exe", "firefox.exe", "brave.exe"]
+                            
+                            is_browser = proc_name in browser_exes
                             
                             if is_browser:
                                 # We are in a browser, but no PLM tag -> We are on a non-PLM site.
                                 # Prevent Stale Context: Clear it.
                                 if self.last_sync_tag != "CLEARED":
-                                    print(f"Ghost Bridge: Browser active but no PLM tag. Clearing context. ({title})")
+                                    print(f"Ghost Bridge: Browser Process ({proc_name}) active but no PLM tag. Clearing context.")
                                     self.context_manager.clear()
                                     self.last_sync_tag = "CLEARED"
                 
