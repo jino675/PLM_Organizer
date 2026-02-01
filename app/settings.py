@@ -36,13 +36,8 @@ class SettingsManager:
             except Exception as e:
                 print(f"Error loading settings: {e}")
 
-        # 4. Apply Dynamic Defaults (if paths are empty)
-        # JSON cannot handle "~" (Home), so we inject it here if needed.
-        if not self.data.get("target_folder"):
-            self.data["target_folder"] = os.path.join(os.path.expanduser("~"), "Downloads", "MyPLM")
-            
-        if not self.data.get("watch_folder"):
-            self.data["watch_folder"] = os.path.join(os.path.expanduser("~"), "Downloads")
+        # 4. Dynamic Defaults removed. 
+        # Application now handles empty paths gracefully by requiring user setup.
 
     def save(self):
         try:

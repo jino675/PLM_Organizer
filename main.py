@@ -59,7 +59,7 @@ def main():
 
     # 2. File Watcher
     watcher = FileWatcher()
-    watcher.start()
+    # watcher.start() -> Deformed to GUI for validation logic
     
     # 3. Ghost Title Bridge (Invisible Sync)
     from app.bridge import TitleBridge
