@@ -1,4 +1,4 @@
-# PLM Organizer (v1.8.13)
+# PLM Organizer (v1.8.14)
 
 **PLM Organizer** is a desktop automation tool designed to streamline the workflow of downloading and organizing PLM (Product Lifecycle Management) data. It automatically detects, unzips, and organizes downloads based on the context of the active PLM web page.
 
@@ -22,10 +22,15 @@
     - **Priority 2**: Python `zipfile` (Legacy support).
 - **Corrupt File Handling**: Moves the original ZIP even if extraction fails, so you never lose data.
 
-### 4. 🛠️ Reliability
+### 4. 🛡️ Safe Startup (v1.8.14)
+- **Manual Monitoring**: App launches in "Ready" mode. You must explicitly click "Start" after verifying the folder.
+- **Configuration Validation**: The "Start" button is disabled until a valid Target Folder is selected.
+- **Auto-Correction**: Changes to settings instantly reset the watcher to the safe state.
+
+### 5. 🛠️ Reliability
 - **0-Byte Guard**: Waits for files to be fully written (handling Innorix/Network delays).
 - **Process Protection**: Automatically kills zombie processes on shutdown.
-- **Process Log**: `error_log.txt` captures startup crashes for easy debugging.
+- **Process Log**: `error.log` captures startup crashes for easy debugging.
 
 ---
 
@@ -73,7 +78,7 @@ To distribute this application to users who don't have Python installed:
 
 | Issue | Solution |
 |-------|----------|
-| **GUI won't open** | Check `error_log.txt` in the project folder. |
+| **GUI won't open** | Check `error.log` in the project folder. |
 | **"WinError 2" / File Not Found** | Already fixed in v1.8.10. If seen, check permissions. |
 | **Unzip Failed** | Check if the filename is too long. The app will automatically try `tar` to fix this. |
 | **App says "Unknown Context"** | Ensure the Browser Extension is active and you are on a valid PLM page. |
@@ -81,6 +86,7 @@ To distribute this application to users who don't have Python installed:
 ---
 
 ## 📜 Version History
+- **v1.8.14**: Safe Startup (Manual Start), Config Cleanup, Log Rename.
 - **v1.8.13**: Switched to `tar` as primary unzip method (Long Path support).
 - **v1.8.11**: Thread-safe duplicate prevention (Mutex).
 - **v1.8.9**: "Unzip-First" strategy introduced.
