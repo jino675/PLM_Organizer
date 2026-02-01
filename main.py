@@ -24,7 +24,7 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
     
     # Always write to file
     try:
-        with open("error_log.txt", "a", encoding="utf-8") as f:
+        with open("error.log", "a", encoding="utf-8") as f:
             f.write(f"\n[{os.environ.get('COMPUTERNAME', 'UNKNOWN')}] {'='*40}\n")
             f.write(err_msg)
     except:
