@@ -265,10 +265,17 @@ class MainWindow(QMainWindow):
         self.auto_unzip_cb.setChecked(self.settings_manager.get("auto_unzip", True))
         self.auto_unzip_cb.toggled.connect(self.toggle_auto_unzip)
         
-        cb_layout.addWidget(self.overlay_cb)
-        cb_layout.addWidget(self.always_top_cb)
-        cb_layout.addWidget(self.auto_unzip_cb)
-        settings_layout.addLayout(cb_layout)
+        # Row 1: Overlay & Always on Top
+        row1_layout = QHBoxLayout()
+        row1_layout.addWidget(self.overlay_cb)
+        row1_layout.addWidget(self.always_top_cb)
+        settings_layout.addLayout(row1_layout)
+
+        # Row 2: Auto Unzip (Below)
+        row2_layout = QHBoxLayout()
+        row2_layout.addWidget(self.auto_unzip_cb)
+        row2_layout.addStretch(1) # Keep it left-aligned
+        settings_layout.addLayout(row2_layout)
         
         # Target Folder Styled Field
         folder_container = QWidget()
