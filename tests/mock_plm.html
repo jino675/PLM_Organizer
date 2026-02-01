@@ -42,6 +42,8 @@
     <button onclick="openScenario(2)">Open Scenario 2 (No Defect)</button>
     <button onclick="openScenario(3)">Open Scenario 3 (Complex)</button>
     <button onclick="openScenario(4)">Open Scenario 4 (Real World)</button>
+    <button onclick="openScenario(5)">Open Scenario 5 (Forbidden Chars)</button>
+    <button onclick="openScenario(6)">Open Scenario 6 (Empty)</button>
     <hr>
 
     <div id="content-area">
@@ -49,6 +51,26 @@
     </div>
 
     <script>
+        // ... (scenarios object is below) ...
+
+        function injectMetadata() {
+            // Simulate AJAX load
+            document.getElementById('plm-title-text').innerText = "[AJAX] Loaded Dynamic Title";
+            document.getElementById('defect-link').innerText = "DF_DYNAMIC_LOAD";
+        }
+
+        function clearMetadata() {
+            // Simulate navigation away
+            document.getElementById('plm-title-text').innerText = "";
+            document.getElementById('defect-link').innerText = "";
+            document.title = "Navigating...";
+        }
+
+        function hijackTitle() {
+            // Simulate leaving PLM
+            document.title = "Google";
+        }
+
         const scenarios = {
             1: {
                 defect: "DF123456-78901",
@@ -69,6 +91,16 @@
                 defect: "DF111111-22222",
                 plm: "P777777-88888",   // 6 digits
                 title: "[string1] [string2] this is an example  X28Q332(issue model ID)"
+            },
+            5: {
+                defect: "DF_FORBIDDEN_CHARS",
+                plm: "P_BAD_NAMES",
+                title: "File: Name? *Bad* <Chars> | \"Quote\""
+            },
+            6: {
+                defect: "",
+                plm: "",
+                title: "Just a Random Page"
             }
         };
 
@@ -81,8 +113,16 @@
 
             return `
                 <div id="content">
+                    <!-- Dynamic Simulator Controls -->
+                    <div class="section" style="border-color: red; background: #fff0f0;">
+                         <h3>SPA Simulator (Dynamic DOM)</h3>
+                         <button onclick="injectMetadata()">Inject Valid Metadata</button>
+                         <button onclick="clearMetadata()">Clear Metadata (Simulate Navigation)</button>
+                         <button onclick="hijackTitle()">Hijack Title (Simulate 'Google')</button>
+                    </div>
+
                     <!-- Selector: #content > div:nth-child(1) > table > ... -->
-                    <div class="header-box">
+                    <div id="plm-table" class="header-box">
                         <table border="1" style="width:100%; border-collapse: collapse;">
                             <tbody>
                                 <tr>
@@ -91,7 +131,7 @@
                                     </th>
                                     <th style="text-align:left; padding:10px;">
                                         <span class="icon">[ICON]</span> 
-                                        ${data.title} 
+                                        <span id="plm-title-text">${data.title}</span>
                                         <span class="model-id">(MODEL_X28)</span>
                                     </th>
                                 </tr>
@@ -117,7 +157,7 @@
                                                 <tr>
                                                     <td>
                                                         <span class="label">KONA ID (Link):</span>
-                                                        <a href="#" style="font-weight:bold; color:blue;">${data.defect}</a>
+                                                        <a href="#" id="defect-link" style="font-weight:bold; color:blue;">${data.defect}</a>
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -136,7 +176,7 @@
                            <button>Download Simulation File</button>
                         </a>
                         <hr>
-                        <button onclick="bulkDownload()">Bulk Download</button>
+                        <button onclick="bulkDownload()">Bulk Download (Race Cond. Test)</button>
                     </div>
                 </div>
             `;
