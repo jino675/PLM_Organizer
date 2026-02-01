@@ -7,7 +7,79 @@ from app.context import ContextManager
 import re
 import zipfile
 
-# ... (Previous code remains the same until process_zip_workflow)
+class Organizer:
+    def __init__(self):
+        self.context_manager = ContextManager()
+        self.on_success_callback = None
+        # v1.8.11: Thread-Safe Ledger to prevent duplicate processing
+        self.active_files = set()
+        self.lock = threading.Lock()
+
+    def set_callback(self, callback):
+        self.on_success_callback = callback
+
+
+    def organize_file(self, file_path):
+        """
+        Main entry point. Decides whether to just move or unzip-and-move.
+        Running in a separate thread (spawned by Watcher).
+        """
+        # 0. Gatekeeping (Duplicate Prevention)
+        with self.lock:
+            if file_path in self.active_files:
+                print(f"Skipping duplicate event for: {os.path.basename(file_path)}")
+                return
+            self.active_files.add(file_path)
+
+        try:
+            self._organize_file_internal(file_path)
+        finally:
+            with self.lock:
+                self.active_files.discard(file_path)
+
+    def _organize_file_internal(self, file_path):
+        """
+        Original organize_file logic, now wrapped for thread safety.
+        """
+        # 1. Get Context
+        context = self.context_manager.get_context()
+        if not context:
+            print(f"Skipping {file_path}: No active PLM context.")
+            return
+
+        folder_name = context.get('folder_name')
+        if not folder_name:
+            print(f"Skipping {file_path}: No valid folder name determined.")
+            return
+            
+        # Target Directory
+        base_dir = os.path.dirname(file_path)
+        # Note: We move FROM base_dir TO target_dir
+        # target_dir is usually different from base_dir (e.g. Downloads -> Documents/PLM/...)
+        # But base_dir is where the file IS NOW (Downloads).
+        
+        # Construct absolute target path
+        # Assuming the user wants to organize relative to the app or a fixed location?
+        # Actually in v1 code, target_dir was os.path.join(base_dir, folder_name).
+        # Meaning it creates a subfolder inside Downloads.
+        target_dir = os.path.join(base_dir, folder_name)
+        
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+            print(f"Created directory: {target_dir}")
+
+        # 2. Check Strategy
+        filename = os.path.basename(file_path)
+        is_zip = filename.lower().endswith('.zip')
+        
+        from app.settings import SettingsManager
+        auto_unzip = SettingsManager().get("auto_unzip", True)
+
+        if is_zip and auto_unzip:
+            print(f"ZIP detected (Unzip-First Strategy): {file_path}")
+            self.process_zip_workflow(file_path, target_dir)
+        else:
+            self.move_file_safe(file_path, target_dir)
 
     def process_zip_workflow(self, zip_path, target_dir):
         """

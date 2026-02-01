@@ -1,0 +1,10 @@
+
+[GALLAXY_BOOK] ========================================
+Traceback (most recent call last):
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\main.py", line 38, in <module>
+    from app.watcher import FileWatcher
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\watcher.py", line 7, in <module>
+    from app.organizer import Organizer
+  File "C:\Users\fbwls\OneDrive\문서\PLMOrganizer\app\organizer.py", line 12
+    def process_zip_workflow(self, zip_path, target_dir):
+IndentationError: unexpected indent
