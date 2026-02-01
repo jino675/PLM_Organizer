@@ -51,10 +51,10 @@ class TitleBridge(threading.Thread):
                             self.last_sync_tag = sync_tag
                             break # Found one, good for this poll
                 
-                time.sleep(1.0) # Poll every second
+                time.sleep(0.2) # FAST Poll (0.2s) for instant response
             except Exception as e:
                 print(f"Title Bridge Error: {e}")
-                time.sleep(2)
+                time.sleep(1)
 
     def stop(self):
         self.running = False

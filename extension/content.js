@@ -34,14 +34,18 @@ function syncTitle(metadata) {
 
     const tag = `[PLM_CTX:${id}|${rawTitle}]`;
 
-    if (tag === lastMetadataTag) return;
+    // Fix: Force update if the title doesn't currently show the tag.
+    // This ensures the Bridge sees it on every Focus, even if data hasn't changed.
+    if (tag === lastMetadataTag && document.title.startsWith(tag)) return;
     lastMetadataTag = tag;
 
-    console.log("[Content] Ghost Tag Updated:", tag);
+    console.log("[Content] Ghost Tag Applied:", tag);
     document.title = tag + " " + originalTitle;
 
     setTimeout(() => {
-        document.title = originalTitle;
+        if (document.title.startsWith(tag)) {
+            document.title = originalTitle;
+        }
     }, 2000);
 }
 
