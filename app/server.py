@@ -12,13 +12,20 @@ context_manager = ContextManager()
 
 @app.route('/update_context', methods=['POST'])
 def update_context():
-    data = request.json
-    if not data:
-        return jsonify({"status": "error", "message": "No data provided"}), 400
-    
-    # Expected keys: defect_id, plm_id, title
-    context_manager.update_context(data)
-    return jsonify({"status": "ok", "received": data})
+    try:
+        data = request.json
+        print(f"[Server] Received Update Payload: {str(data)[:100]}...") # DEBUG
+        
+        # Validate essential fields
+        if not data or not isinstance(data, dict):
+            return jsonify({"status": "error", "message": "No data provided"}), 400
+        
+        # Expected keys: defect_id, plm_id, title
+        context_manager.update_context(data)
+        return jsonify({"status": "ok", "received": data})
+    except Exception as e:
+        print(f"[Server] Error processing update_context: {e}")
+        return jsonify({"status": "error", "message": f"Server error: {e}"}), 500
 
 @app.route('/health', methods=['GET'])
 def health():

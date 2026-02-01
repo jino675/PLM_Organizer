@@ -1,3 +1,6 @@
+// PLM Organizer Helper - Content Script (v1.6.9 DEBUG)
+console.log("[Content] Script INJECTED and RUNNING.");
+
 // --- Configuration Section (Optimization Ready) ---
 const CONFIG = {
     selectors: {
@@ -34,7 +37,7 @@ function syncTitle(metadata) {
     if (tag === lastMetadataTag) return;
     lastMetadataTag = tag;
 
-    console.log("Ghost Syncing:", tag);
+    console.log("[Content] Ghost Tag Updated:", tag);
     document.title = tag + " " + originalTitle;
 
     setTimeout(() => {
@@ -67,6 +70,7 @@ function findValueByAnchor(keywords) {
 }
 
 function parseMetadata() {
+    console.log("[Content] Parsing metadata from DOM...");
     let defectId = "";
     let plmId = "";
     let title = "";
@@ -100,6 +104,8 @@ function parseMetadata() {
         url: window.location.href
     };
 
+    console.log("[Content] Parsed Data:", data);
+
     if (data.defect_id || data.plm_id) {
         syncTitle(data);
     }
@@ -117,6 +123,7 @@ const bodyObserver = new MutationObserver(() => {
 bodyObserver.observe(document.body, { childList: true, subtree: true });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log("[Content] Message Received:", request);
     if (request.action === "get_metadata") {
         const data = parseMetadata();
         sendResponse(data);
