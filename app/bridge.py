@@ -47,6 +47,21 @@ class TitleBridge(threading.Thread):
                                 print(f"Ghost Bridge: Synced from active window -> {id_val}")
                                 self.context_manager.update_context(data)
                                 self.last_sync_tag = sync_tag
+                        else:
+                            # v1.8.0 Active Context Switching
+                            # If no tag is found, check if we are in a Browser.
+                            # If we are browsing another site (Chrome/Edge active but no tag), CLEAR context.
+                            lower_title = title.lower()
+                            browser_keywords = ["google chrome", "microsoft edge", "whale", "firefox", "brave"]
+                            is_browser = any(k in lower_title for k in browser_keywords)
+                            
+                            if is_browser:
+                                # We are in a browser, but no PLM tag -> We are on a non-PLM site.
+                                # Prevent Stale Context: Clear it.
+                                if self.last_sync_tag != "CLEARED":
+                                    print(f"Ghost Bridge: Browser active but no PLM tag. Clearing context. ({title})")
+                                    self.context_manager.clear()
+                                    self.last_sync_tag = "CLEARED"
                 
                 time.sleep(0.2) # Fast poll, but now extremely lightweight (O(1))
             except Exception as e:

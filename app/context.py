@@ -95,3 +95,12 @@ class ContextManager:
                 callback(self.current_data)
             except Exception as e:
                 print(f"Error notifying observer: {e}")
+
+    def clear(self):
+        """Resets the context to empty state."""
+        with self._lock:
+            # Only notify if there WAS data to clear to avoid spamming
+            if self.current_data:
+                self.current_data = {}
+                self.last_heartbeat = time.time()
+                self.notify_observers()
