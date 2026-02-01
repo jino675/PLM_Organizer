@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
                 background-color: #3d3d3d;
                 border: 1px solid #555;
                 padding: 8px;
-                border-radius: 4px;
+                border-radius: 8px; /* Unified Radius */
                 color: #fff;
                 font-weight: bold;
             }
@@ -137,7 +137,7 @@ class MainWindow(QMainWindow):
             }
             QTextEdit {
                 background-color: #1e1e1e;
-                border: 1px solid #333;
+                border: none; /* Border handled by GroupBox */
                 color: #eee;
                 font-family: Consolas, monospace;
                 font-size: 12px;
@@ -149,41 +149,43 @@ class MainWindow(QMainWindow):
                 background-color: #1e1e1e;
                 color: #aaa;
             }
+            /* Scrollbar Styling for a polished look */
+            QScrollBar:vertical {
+                border: none;
+                background: #2b2b2b;
+                width: 10px;
+                margin: 0px 0px 0px 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: #555;
+                min-height: 20px;
+                border-radius: 5px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
         """)
 
         # Central Widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget) # Corrected layout initialization
+        main_layout = QVBoxLayout(central_widget) 
         
-        # 1. Header (Balanced Logo - Title - Version)
+        # 1. Header (Title - Version) - REMOVED Internal Logo
         header_widget = QWidget()
-        header_vbox = QVBoxLayout(header_widget) # Wrap for credits below
+        header_vbox = QVBoxLayout(header_widget)
         header_vbox.setContentsMargins(10, 15, 10, 5)
         
         title_row = QWidget()
         title_row_layout = QHBoxLayout(title_row)
         title_row_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Left: Logo (Enlarged and Vertically Centered)
-        self.logo_label = QLabel()
-        if os.path.exists(icon_path):
-            from PyQt6.QtGui import QPixmap
-            pixmap = QPixmap(icon_path).scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-            self.logo_label.setPixmap(pixmap)
-            self.logo_label.setScaledContents(True)
-        self.logo_label.setFixedSize(64, 64)
-        self.logo_label.setStyleSheet("background: transparent; border: none;")
-        self.logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title_row_layout.addWidget(self.logo_label)
-        
+        # Centered Title
         title_row_layout.addStretch(1)
-        
         self.title_label = QLabel("PLM Organizer")
         self.title_label.setStyleSheet("font-size: 26px; font-weight: bold; color: #ffffff; letter-spacing: 2px;")
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_row_layout.addWidget(self.title_label)
-        
         title_row_layout.addStretch(1)
         
         # Right: Version (Load from VERSION file)
@@ -213,23 +215,9 @@ class MainWindow(QMainWindow):
 
         # 2. Settings Section
         settings_group = QGroupBox("Settings")
-        settings_group.setStyleSheet("""
-            QGroupBox { 
-                border: 1px solid #444; 
-                border-radius: 8px; 
-                margin-top: 20px; 
-                padding-top: 15px; 
-                font-weight: bold;
-                color: #81C784;
-            }
-            QGroupBox::title {
-                subcontrol-origin: border;
-                subcontrol-position: top center;
-                top: -10px;
-                padding: 0 10px;
-                background-color: #2b2b2b;
-            }
-        """)
+        # Stylesheet is active from global, but we can refine specific groupbox look here if needed,
+        # but the global one covers QGroupBox.
+        
         settings_layout = QVBoxLayout()
         
         # Checkboxes Layout
@@ -261,7 +249,7 @@ class MainWindow(QMainWindow):
             background-color: #1a1a1a; 
             color: #4CAF50; 
             padding: 8px; 
-            border-radius: 4px; 
+            border-radius: 8px; /* Unified Radius */
             border: 1px solid #333;
             font-family: 'Consolas', monospace;
             font-size: 12px;
@@ -283,24 +271,30 @@ class MainWindow(QMainWindow):
         # 3. Control Button (Outside and Below Settings)
         self.toggle_btn = QPushButton("Stop Monitoring")
         self.toggle_btn.clicked.connect(self.toggle_monitoring)
-        self.toggle_btn.setStyleSheet("background-color: #C62828; color: #ffffff; border: 1px solid #EF5350; padding: 12px; font-size: 15px;")
-        main_layout.addWidget(self.toggle_btn) # Used main_layout
+        self.toggle_btn.setStyleSheet("background-color: #C62828; color: #ffffff; border: 1px solid #EF5350; padding: 12px; font-size: 15px; border-radius: 8px;") # Unified radius
+        main_layout.addWidget(self.toggle_btn) 
 
         # Current Context Display
         context_layout = QVBoxLayout()
         self.status_label = QLabel("📁 Ready (Waiting for Data...)")
-        self.status_label.setStyleSheet("background-color: #333; color: #aaa; padding: 10px; border-radius: 5px; border: 1px solid #555; font-weight: bold;")
+        self.status_label.setStyleSheet("background-color: #333; color: #aaa; padding: 10px; border-radius: 8px; border: 1px solid #555; font-weight: bold;") # Unified radius (8px)
         self.status_label.setWordWrap(True)
         context_layout.addWidget(self.status_label)
         
-        # Lock Status Indicator
-        main_layout.addLayout(context_layout) # Used main_layout
+        main_layout.addLayout(context_layout) 
 
-        # Logs
-        main_layout.addWidget(QLabel("Logs:")) # Used main_layout
+        # Logs - Now in a GroupBox!
+        log_group = QGroupBox("Logs")
+        # Global stylesheet handles QGroupBox look (same as Settings)
+        log_layout = QVBoxLayout()
+        log_layout.setContentsMargins(5, 10, 5, 5) # Slight padding inside box
+        
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
-        main_layout.addWidget(self.log_area) # Used main_layout
+        log_layout.addWidget(self.log_area)
+        
+        log_group.setLayout(log_layout)
+        main_layout.addWidget(log_group)
 
         # Connect log signal
         # Redirect stdout/stderr - using a safer way to avoid recursion if printing fails
@@ -335,7 +329,7 @@ class MainWindow(QMainWindow):
         if not defect and not plm_id and not title:
             display_text = "📁 Ready (Waiting for Data...)"
             self.status_label.setText(display_text)
-            self.status_label.setStyleSheet("background-color: #333; color: #aaa; padding: 10px; border-radius: 5px; border: 1px solid #555; font-weight: bold;")
+            self.status_label.setStyleSheet("background-color: #333; color: #aaa; padding: 10px; border-radius: 8px; border: 1px solid #555; font-weight: bold;") # Unified 8px
             self.overlay.update_text(display_text)
             return
 
@@ -349,7 +343,7 @@ class MainWindow(QMainWindow):
             display_text = display_text[:77] + "..."
             
         self.status_label.setText(display_text)
-        self.status_label.setStyleSheet("background-color: #0D47A1; color: white; padding: 15px; border-radius: 8px; border: 1px solid #42A5F5; font-size: 14px; font-weight: bold;")
+        self.status_label.setStyleSheet("background-color: #0D47A1; color: white; padding: 15px; border-radius: 8px; border: 1px solid #42A5F5; font-size: 14px; font-weight: bold;") # Unified 8px
  
         # Update Overlay (Sync)
         self.overlay.update_text(display_text)
@@ -364,7 +358,7 @@ class MainWindow(QMainWindow):
             self.watcher.stop()
             self.monitoring_active = False
             self.toggle_btn.setText("Start Monitoring")
-            self.toggle_btn.setStyleSheet("background-color: #2E7D32; color: white; font-weight: bold; border: 1px solid #4CAF50;")
+            self.toggle_btn.setStyleSheet("background-color: #2E7D32; color: white; font-weight: bold; border: 1px solid #4CAF50; border-radius: 8px;") # Unified 8px
             self.statusBar().showMessage("Monitoring Paused")
             self.log_message("Monitoring Paused")
             self.change_folder_btn.setEnabled(True)
@@ -372,7 +366,7 @@ class MainWindow(QMainWindow):
             self.watcher.start()
             self.monitoring_active = True
             self.toggle_btn.setText("Stop Monitoring")
-            self.toggle_btn.setStyleSheet("background-color: #C62828; color: #ffffff; border: 1px solid #EF5350;")
+            self.toggle_btn.setStyleSheet("background-color: #C62828; color: #ffffff; border: 1px solid #EF5350; border-radius: 8px;") # Unified 8px
             self.statusBar().showMessage("Monitoring Active")
             self.log_message("Monitoring Resumed")
             self.change_folder_btn.setEnabled(False)
@@ -397,8 +391,9 @@ class MainWindow(QMainWindow):
         """Update the status bar with extension connection health and animation."""
         if not hasattr(self, 'ghost_permanent_label'):
             # Add Ghost Info to permanent area (Right side)
-            self.ghost_permanent_label = QLabel("👻 Ghost Bridge Only  ")
-            self.ghost_permanent_label.setStyleSheet("color: #90A4AE; font-weight: bold; font-family: 'Segoe UI'; font-size: 13px;")
+            self.ghost_permanent_label = QLabel("Using Ghost Bridge  ") # Removed Only
+            # Removed background color, kept text style only
+            self.ghost_permanent_label.setStyleSheet("color: #90A4AE; font-weight: bold; font-family: 'Segoe UI'; font-size: 13px;") 
             self.statusBar().addPermanentWidget(self.ghost_permanent_label)
 
         last_time = self.context_manager.last_heartbeat
