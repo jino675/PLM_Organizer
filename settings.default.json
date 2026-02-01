@@ -1,0 +1,14 @@
+{
+    "target_folder": "",
+    "watch_folder": "",
+    "show_overlay": true,
+    "always_on_top": true,
+    "auto_unzip": true,
+    "overlay_anchor": "bottom-right",
+    "window_geometry": [
+        100,
+        100,
+        450,
+        700
+    ]
+}
