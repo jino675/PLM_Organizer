@@ -13,17 +13,9 @@ class SettingsManager:
         return cls._instance
 
     def load(self):
-        # 1. Minimal Technical Defaults (Safety Net)
-        self.defaults = {
-            "show_overlay": True,
-            "always_on_top": False,
-            "auto_unzip": True,
-            "overlay_anchor": "bottom-right",
-            "window_geometry": [100, 100, 450, 700],
-            "target_folder": "", # Placeholder
-            "watch_folder": ""   # Placeholder
-        }
-        self.data = self.defaults.copy()
+        # 1. Initialize empty (Rely on settings.default.json)
+        self.defaults = {}
+        self.data = {}
 
         # 2. Load Template (settings.default.json)
         base_dir = os.path.dirname(os.path.dirname(__file__))
