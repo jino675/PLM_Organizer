@@ -57,7 +57,7 @@ class DownloadHandler(FileSystemEventHandler):
         else:
             print(f"Skipping {filename}: File verification failed (Locked or Unstable).")
 
-    def wait_for_file_ready(self, file_path, check_interval=1.0, stability_checks=3, lock_retries=10):
+    def wait_for_file_ready(self, file_path, check_interval=0.2, stability_checks=3, lock_retries=50):
         """
         Ensures file is ready by:
         1. Checking size stability (no changes for 'stability_checks' intervals).
@@ -68,7 +68,7 @@ class DownloadHandler(FileSystemEventHandler):
         
         # Phase 1: Size Stability
         print(f"Verifying stability for: {os.path.basename(file_path)}")
-        for _ in range(60): # Max 60 seconds wait for size to stabilize
+        for _ in range(150): # Max 30 seconds (150 * 0.2) wait for size to stabilize
             try:
                 current_size = os.path.getsize(file_path)
             except FileNotFoundError:

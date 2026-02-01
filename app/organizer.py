@@ -69,10 +69,13 @@ class Organizer:
 
         if moved_file:
             # Check for Auto-Unzip
-            # Check for Auto-Unzip
             if moved_file.lower().endswith('.zip'):
-                print(f"ZIP detected! Starting extraction: {moved_file}")
-                self.unzip_file(moved_file)
+                print(f"ZIP detected! Starting background extraction: {moved_file}")
+                import threading
+                # Feature: Async Unzip
+                # Hand off the heavy lifting to a background thread so the main watcher 
+                # can go back to processing the next file immediately.
+                threading.Thread(target=self.unzip_file, args=(moved_file,), daemon=True).start()
 
             if self.on_success_callback:
                 self.on_success_callback(moved_file)
