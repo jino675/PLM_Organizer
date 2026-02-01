@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+import threading
 from app.context import ContextManager
 import re
 import zipfile
@@ -9,6 +10,9 @@ class Organizer:
     def __init__(self):
         self.context_manager = ContextManager()
         self.on_success_callback = None
+        # v1.8.11: Thread-Safe Ledger to prevent duplicate processing
+        self.active_files = set()
+        self.lock = threading.Lock()
 
     def set_callback(self, callback):
         self.on_success_callback = callback
@@ -18,6 +22,23 @@ class Organizer:
         """
         Main entry point. Decides whether to just move or unzip-and-move.
         Running in a separate thread (spawned by Watcher).
+        """
+        # 0. Gatekeeping (Duplicate Prevention)
+        with self.lock:
+            if file_path in self.active_files:
+                print(f"Skipping duplicate event for: {os.path.basename(file_path)}")
+                return
+            self.active_files.add(file_path)
+
+        try:
+            self._organize_file_internal(file_path)
+        finally:
+            with self.lock:
+                self.active_files.discard(file_path)
+
+    def _organize_file_internal(self, file_path):
+        """
+        Original organize_file logic, now wrapped for thread safety.
         """
         # 1. Get Context
         context = self.context_manager.get_context()
