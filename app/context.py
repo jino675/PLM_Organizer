@@ -62,6 +62,11 @@ class ContextManager:
                 if "  " in clean_title:
                     clean_title = clean_title.split("  ")[0]
                 
+                # Step B-2 (v1.8.4): Sanitize Forbidden Windows Characters
+                # Replace < > : " / \ | ? * with '#' (User preference)
+                # Note: We do this BEFORE whitespace normalization so they stand out.
+                clean_title = re.sub(r'[<>:"/\\|?*]', '#', clean_title)
+
                 # Step C: Final trimming and Regex-based whitespace normalization
                 clean_title = re.sub(r'\s+', '_', clean_title.strip())
                 
