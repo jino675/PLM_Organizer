@@ -377,34 +377,34 @@ class MainWindow(QMainWindow):
         self.log_message("Application Started")
         
         # State managed by validation
-        self.validate_and_start()
+        self.update_ui_state()
 
-    def validate_and_start(self):
-        """Checks configuration and starts if valid."""
+    def update_ui_state(self):
+        """Checks configuration and updates UI state (Does not auto-start)."""
         target_folder = self.settings_manager.get("target_folder")
         valid = target_folder and os.path.isdir(target_folder)
         
-        if valid:
-            # Auto-start logic (Watcher handles duplicate start safely)
-            self.watcher.start()
-            
-            self.monitoring_active = True
-            self.toggle_btn.setText("Stop Monitoring")
-            self.toggle_btn.setStyleSheet("background-color: #C62828; color: #ffffff; border: 1px solid #EF5350; border-radius: 8px;")
-            self.toggle_btn.setEnabled(True)
-            self.statusBar().showMessage("Monitoring Active")
-            self.log_message("Monitoring Started")
-            self.change_folder_btn.setEnabled(False) 
-        else:
-            # Invalid State (Watcher handles stop safely)
+        # Always default to STOPPED state when validating/changing folder
+        if self.watcher.observer and self.watcher.observer.is_alive():
             self.watcher.stop()
-                
-            self.monitoring_active = False
+            
+        self.monitoring_active = False
+        
+        if valid:
+            # Valid: Ready to Start
+            self.toggle_btn.setText("Start Monitoring")
+            self.toggle_btn.setStyleSheet("background-color: #2E7D32; color: white; font-weight: bold; border: 1px solid #4CAF50; border-radius: 8px;")
+            self.toggle_btn.setEnabled(True)
+            self.statusBar().showMessage("Ready")
+            self.log_message("Configuration Valid. Press Start to begin.")
+            self.change_folder_btn.setEnabled(True) 
+        else:
+            # Invalid: Blocked
             self.toggle_btn.setText("⚠️ Select Target Folder")
             self.toggle_btn.setStyleSheet("background-color: #444; color: #888; border: 1px solid #555; border-radius: 8px; font-style: italic;")
             self.toggle_btn.setEnabled(False)
             self.statusBar().showMessage("Waiting for Configuration...")
-            self.log_message("⚠️ Interpretation: Target Folder not set.")
+            self.log_message("⚠️ Target Folder not set.")
             self.change_folder_btn.setEnabled(True) 
 
     @pyqtSlot(dict)
@@ -519,8 +519,8 @@ class MainWindow(QMainWindow):
                 
             self.log_message(f"Target folder changed to: {folder}")
             
-            # Re-validate and hopefully start
-            self.validate_and_start()
+            # Re-validate (Reset to stopped state)
+            self.update_ui_state()
             
             # If already running, update watcher path (Safety)
             if self.monitoring_active:
