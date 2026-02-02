@@ -3,6 +3,10 @@ console.log("[Content] Script INJECTED and RUNNING.");
 
 // --- Configuration Section (Optimization Ready) ---
 const CONFIG = {
+    // 🔒 Security: Only run on these domains. 
+    // Replace "*" with your specific PLM domain (e.g., "plm.corp.com") to prevent accidental title changes on other sites.
+    domains: ["*"],
+
     selectors: {
         plmId: '#content > div:nth-child(1) > table > tbody > tr > th:nth-child(1) > strong, #plm-id-value',
         defectId: '#content > div.dataGrid.nolist.mgT-1 > table > tbody > tr:nth-child(19) > td > table > tbody > tr > td > a, #kona-id-value',
@@ -14,6 +18,11 @@ const CONFIG = {
         title: ["Title", "제목", "Subject"]
     }
 };
+
+function isSiteAllowed() {
+    if (CONFIG.domains.includes("*")) return true;
+    return CONFIG.domains.some(d => window.location.hostname.includes(d));
+}
 
 // --- Ghost Title Bridge (No-Network Sync) ---
 let originalTitle = document.title;
@@ -73,6 +82,9 @@ function findValueByAnchor(keywords) {
 }
 
 function parseMetadata() {
+    // 🔒 Security Check
+    if (!isSiteAllowed()) return null;
+
     console.log("[Content] Parsing metadata from DOM...");
     let defectId = "";
     let plmId = "";
