@@ -1,4 +1,10 @@
 // PLM Organizer Helper - Background Script (v1.7.1 GHOST ONLY)
+try {
+    importScripts('config.js');
+} catch (e) {
+    console.error("[BG] Failed to import config.js:", e);
+}
+
 let currentTabId = null;
 
 // [DEBUG] Logging wrapper
@@ -55,10 +61,7 @@ function requestMetadataFromTab(tabId) {
 
         // Check if allowed domain - Synchronization with manifest.json
         const url = tab.url || "";
-        const isAllowed = url.includes("splm.sec.samsung.net") ||
-            url.startsWith("file:///") ||
-            url.includes("127.0.0.1") ||
-            url.includes("localhost");
+        const isAllowed = typeof isUrlAllowed === 'function' ? isUrlAllowed(url) : true; // Safety fallback
 
         log(`Checking permissions for URL: ${url.substring(0, 50)}... -> Allowed? ${isAllowed}`);
 
