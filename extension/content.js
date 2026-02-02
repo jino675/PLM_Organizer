@@ -128,14 +128,22 @@ function parseMetadata() {
     return data;
 }
 
-// Auto-Sync Setup
-setTimeout(parseMetadata, 1000);
-let debounceTimer;
-const bodyObserver = new MutationObserver(() => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(parseMetadata, 1000);
-});
-bodyObserver.observe(document.body, { childList: true, subtree: true });
+// Auto-Sync Setup (Only runs on Allowed Domains)
+// This Observer effectively "pushes" changes to the Window Title (Ghost Bridge),
+// handling SPA navigation or dynamic content loading that bg.js might miss.
+if (isSiteAllowed()) {
+    console.log("[Content] Site Allowed. Starting Auto-Sync Observer.");
+    setTimeout(parseMetadata, 1000);
+
+    let debounceTimer;
+    const bodyObserver = new MutationObserver(() => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(parseMetadata, 1000);
+    });
+    bodyObserver.observe(document.body, { childList: true, subtree: true });
+} else {
+    console.log("[Content] Site Not Allowed. Auto-Sync Disabled.");
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("[Content] Message Received:", request);
