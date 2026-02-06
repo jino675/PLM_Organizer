@@ -6,7 +6,7 @@ echo =======================
 :: 0. Kill running instances
 echo [*] Stopping running instances...
 taskkill /F /IM PLM_Organizer.exe /T 2>nul
-timeout /t 1 /nobreak >nul
+timeout /t 3 /nobreak >nul
 
 :: 1. Check for PyInstaller
 if not exist "venv\Scripts\pyinstaller.exe" (
@@ -21,7 +21,7 @@ if exist dist rmdir /s /q dist
 
 :: 3. Run Build (Using Spec File to include VERSION)
 echo [*] Building EXE...
-venv\Scripts\pyinstaller --clean --noconsole PLM_Organizer.spec
+venv\Scripts\pyinstaller --clean PLM_Organizer.spec
 
 if %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Build Failed!
