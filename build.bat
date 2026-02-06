@@ -3,6 +3,11 @@ setlocal
 echo [PLM Organizer Builder]
 echo =======================
 
+:: 0. Kill running instances
+echo [*] Stopping running instances...
+taskkill /F /IM PLM_Organizer.exe /T 2>nul
+timeout /t 1 /nobreak >nul
+
 :: 1. Check for PyInstaller
 if not exist "venv\Scripts\pyinstaller.exe" (
     echo [!] PyInstaller not found. Installing...
@@ -13,19 +18,10 @@ if not exist "venv\Scripts\pyinstaller.exe" (
 echo [*] Cleaning old build files...
 if exist build rmdir /s /q build
 if exist dist rmdir /s /q dist
-if exist *.spec del *.spec
 
-:: 3. Run Build
+:: 3. Run Build (Using Spec File to include VERSION)
 echo [*] Building EXE...
-:: --noconsole: No black window
-:: --onefile: Single .exe file
-:: --clean: Clean cache
-:: --add-data: Include assets folder
-venv\Scripts\pyinstaller --noconsole --onefile --clean ^
-    --name="PLM_Organizer" ^
-    --icon="app/assets/icon.png" ^
-    --add-data "app/assets;app/assets" ^
-    main.py
+venv\Scripts\pyinstaller --clean --noconsole PLM_Organizer.spec
 
 if %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Build Failed!
