@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "PLM Organizer Helper",
-    "version": "1.8.15",
+    "version": "1.8.16",
     "description": "Extracts PLM metadata for PLM Organizer Desktop App. Created by jino.ryu",
     "permissions": [
         "activeTab",

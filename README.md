@@ -1,4 +1,4 @@
-# PLM Organizer (v1.8.15)
+# PLM Organizer (v1.8.16)
 
 **PLM Organizer** is a desktop automation tool designed to streamline the workflow of downloading and organizing PLM (Product Lifecycle Management) data. It automatically detects, unzips, and organizes downloads based on the context of the active PLM web page.
 
@@ -86,6 +86,7 @@ To distribute this application to users who don't have Python installed:
 ---
 
 ## 📜 Version History
+- **v1.8.16**: Settings moved to AppData (Safe Version Reset).
 - **v1.8.15**: Extension Site Lock Unified (config.js).
 - **v1.8.14**: Safe Startup (Manual Start), Config Cleanup, Log Rename.
 - **v1.8.13**: Switched to `tar` as primary unzip method (Long Path support).
