@@ -1,11 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+version_src = os.path.abspath('VERSION')
 
 
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('app/assets', 'app/assets'), ('VERSION', '.')],
+    datas=[('app/assets', 'app/assets'), (version_src, '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

@@ -185,7 +185,7 @@ class MainWindow(QMainWindow):
         header_vbox = QVBoxLayout(header_widget)
         header_vbox.setContentsMargins(10, 15, 10, 5)
         
-        # Load Version (Frozen-aware) with DEBUG
+        # Load Version (Frozen-aware)
         version_str = "Unknown"
         import sys
         is_frozen = getattr(sys, 'frozen', False)
@@ -200,12 +200,7 @@ class MainWindow(QMainWindow):
             try:
                 with open(version_path, "r") as f:
                     version_str = f.read().strip()
-            except Exception as e:
-                version_str = "ReadErr"
-        else:
-            # DEBUG: Show where we looked (Truncated)
-            short_path = "..." + version_path[-25:] if len(version_path) > 25 else version_path
-            version_str = f"Missing: {short_path}"
+            except: pass
 
         title_row = QWidget()
         title_row_layout = QHBoxLayout(title_row)
@@ -213,7 +208,7 @@ class MainWindow(QMainWindow):
         
         # BALANCING TRICK: Left Spacer Widget (Matches Version Width)
         balancer = QLabel()
-        balancer.setFixedWidth(120) # Widened for Debug
+        balancer.setFixedWidth(60) 
         title_row_layout.addWidget(balancer)
         
         title_row_layout.addStretch(1)
@@ -227,7 +222,7 @@ class MainWindow(QMainWindow):
         
         # Right: Version (v1.x.x)
         self.version_label = QLabel(f"v{version_str}")
-        self.version_label.setFixedWidth(120) # Widened for Debug
+        self.version_label.setFixedWidth(60)
         self.version_label.setStyleSheet("color: #888; font-size: 11px; margin-bottom: 4px;")
         self.version_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
         title_row_layout.addWidget(self.version_label)
