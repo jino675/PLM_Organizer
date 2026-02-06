@@ -1,6 +1,19 @@
 @echo off
 setlocal
+
+:: Check for Admin rights (Auto-Elevation)
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo [!] Requesting Administrator privileges...
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+
+:: Ensure we are in the script directory
+cd /d "%~dp0"
+
 echo [PLM Organizer Builder]
+
 :: 0. Kill running instances
 echo [*] Checking for running instances...
 taskkill /F /IM PLM_Organizer.exe /T
