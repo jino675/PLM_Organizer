@@ -185,9 +185,17 @@ class MainWindow(QMainWindow):
         header_vbox = QVBoxLayout(header_widget)
         header_vbox.setContentsMargins(10, 15, 10, 5)
         
-        # Load Version (Moved up to use in Title Row)
+        # Load Version (Frozen-aware)
         version_str = "Unknown"
-        version_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "VERSION")
+        import sys
+        if getattr(sys, 'frozen', False):
+            # PyInstaller mode: sys._MEIPASS contains bundled files
+            base_path = sys._MEIPASS
+        else:
+            # Dev mode: Parent of 'app' directory
+            base_path = os.path.dirname(os.path.dirname(__file__))
+            
+        version_path = os.path.join(base_path, "VERSION")
         if os.path.exists(version_path):
             try:
                 with open(version_path, "r") as f:
